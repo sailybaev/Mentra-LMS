@@ -1,11 +1,15 @@
 export interface GroupDTO {
   id: string
-  course_id: string
+  course_id?: string
   org_id: string
   teacher_id?: string
   name: string
   created_at: string
   updated_at: string
+}
+
+export interface AssignGroupInput {
+  course_id: string
 }
 
 export interface GroupScheduleDTO {

@@ -20,9 +20,11 @@ func NewGroupUseCase(groupRepo repositories.GroupRepository, courseRepo reposito
 	return &GroupUseCase{groupRepo: groupRepo, courseRepo: courseRepo}
 }
 
-func (uc *GroupUseCase) CreateGroup(ctx context.Context, courseID, orgID uuid.UUID, req dto.CreateGroupRequest) (*dto.GroupDTO, error) {
-	if _, err := uc.courseRepo.FindByID(ctx, courseID, orgID); err != nil {
-		return nil, err
+func (uc *GroupUseCase) CreateGroup(ctx context.Context, courseID *uuid.UUID, orgID uuid.UUID, req dto.CreateGroupRequest) (*dto.GroupDTO, error) {
+	if courseID != nil {
+		if _, err := uc.courseRepo.FindByID(ctx, *courseID, orgID); err != nil {
+			return nil, err
+		}
 	}
 	now := time.Now()
 	g := &entities.Group{
@@ -52,6 +54,29 @@ func (uc *GroupUseCase) GetGroup(ctx context.Context, id, orgID uuid.UUID) (*dto
 		return nil, err
 	}
 	return toGroupDTO(g), nil
+}
+
+func (uc *GroupUseCase) ListByOrg(ctx context.Context, orgID uuid.UUID) ([]dto.GroupDTO, error) {
+	groups, err := uc.groupRepo.ListGroupsByOrg(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.GroupDTO, len(groups))
+	for i, g := range groups {
+		result[i] = *toGroupDTO(&g)
+	}
+	return result, nil
+}
+
+func (uc *GroupUseCase) AssignToCourse(ctx context.Context, groupID, courseID, orgID uuid.UUID) error {
+	if _, err := uc.courseRepo.FindByID(ctx, courseID, orgID); err != nil {
+		return err
+	}
+	return uc.groupRepo.AssignToCourse(ctx, groupID, courseID, orgID)
+}
+
+func (uc *GroupUseCase) UnassignFromCourse(ctx context.Context, groupID, orgID uuid.UUID) error {
+	return uc.groupRepo.UnassignFromCourse(ctx, groupID, orgID)
 }
 
 func (uc *GroupUseCase) ListGroups(ctx context.Context, courseID, orgID uuid.UUID) ([]dto.GroupDTO, error) {
@@ -142,10 +167,12 @@ func (uc *GroupUseCase) AddMember(ctx context.Context, groupID, orgID uuid.UUID,
 	if err != nil {
 		return nil, apperrors.ValidationError("invalid student_id")
 	}
-	// Enforce: student may only belong to one group per course
-	existing, _ := uc.groupRepo.GetStudentGroup(ctx, g.CourseID, studentID, orgID)
-	if existing != nil {
-		return nil, apperrors.ConflictError("student is already in a group for this course")
+	// Enforce: student may only belong to one group per course (only when group is assigned to a course)
+	if g.CourseID != nil {
+		existing, _ := uc.groupRepo.GetStudentGroup(ctx, *g.CourseID, studentID, orgID)
+		if existing != nil {
+			return nil, apperrors.ConflictError("student is already in a group for this course")
+		}
 	}
 	m := &entities.GroupMember{
 		ID:        uuid.New(),
@@ -193,11 +220,14 @@ func (uc *GroupUseCase) GetStudentGroup(ctx context.Context, courseID, studentID
 func toGroupDTO(g *entities.Group) *dto.GroupDTO {
 	d := &dto.GroupDTO{
 		ID:        g.ID.String(),
-		CourseID:  g.CourseID.String(),
 		OrgID:     g.OrgID.String(),
 		Name:      g.Name,
 		CreatedAt: g.CreatedAt,
 		UpdatedAt: g.UpdatedAt,
+	}
+	if g.CourseID != nil {
+		s := g.CourseID.String()
+		d.CourseID = &s
 	}
 	if g.TeacherID != nil {
 		s := g.TeacherID.String()

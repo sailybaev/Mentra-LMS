@@ -12,7 +12,7 @@ import {
 
 export async function listExams(courseID: string): Promise<ExamListItemDTO[]> {
   const res = await apiClient.get<{ data: ExamListItemDTO[] }>(`/courses/${courseID}/exams`)
-  return res.data.data
+  return res.data.data ?? []
 }
 
 export async function createExam(courseID: string, input: CreateExamInput): Promise<ExamDTO> {

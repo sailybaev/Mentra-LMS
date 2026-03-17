@@ -49,6 +49,47 @@ func (r *GORMGroupRepository) ListGroupsByCourse(ctx context.Context, courseID, 
 	return result, nil
 }
 
+func (r *GORMGroupRepository) ListGroupsByOrg(ctx context.Context, orgID uuid.UUID) ([]entities.Group, error) {
+	var models []database.GroupModel
+	err := r.db.WithContext(ctx).Where("org_id = ?", orgID.String()).
+		Order("created_at ASC").Find(&models).Error
+	if err != nil {
+		return nil, apperrors.InternalError(err.Error())
+	}
+	result := make([]entities.Group, len(models))
+	for i, m := range models {
+		result[i] = *toGroupEntity(&m)
+	}
+	return result, nil
+}
+
+func (r *GORMGroupRepository) AssignToCourse(ctx context.Context, groupID, courseID, orgID uuid.UUID) error {
+	courseIDStr := courseID.String()
+	result := r.db.WithContext(ctx).Model(&database.GroupModel{}).
+		Where("id = ? AND org_id = ?", groupID.String(), orgID.String()).
+		Update("course_id", courseIDStr)
+	if result.Error != nil {
+		return apperrors.InternalError(result.Error.Error())
+	}
+	if result.RowsAffected == 0 {
+		return apperrors.NotFoundError("group", groupID.String())
+	}
+	return nil
+}
+
+func (r *GORMGroupRepository) UnassignFromCourse(ctx context.Context, groupID, orgID uuid.UUID) error {
+	result := r.db.WithContext(ctx).Model(&database.GroupModel{}).
+		Where("id = ? AND org_id = ?", groupID.String(), orgID.String()).
+		Update("course_id", nil)
+	if result.Error != nil {
+		return apperrors.InternalError(result.Error.Error())
+	}
+	if result.RowsAffected == 0 {
+		return apperrors.NotFoundError("group", groupID.String())
+	}
+	return nil
+}
+
 func (r *GORMGroupRepository) UpdateGroup(ctx context.Context, g *entities.Group) error {
 	g.UpdatedAt = time.Now()
 	return r.db.WithContext(ctx).Save(toGroupModel(g)).Error
@@ -145,7 +186,7 @@ func (r *GORMGroupRepository) FindCourseIDsByStudent(ctx context.Context, studen
 	err := r.db.WithContext(ctx).Raw(
 		`SELECT DISTINCT g.course_id FROM groups g
 		 JOIN group_members gm ON gm.group_id = g.id
-		 WHERE gm.student_id = ? AND g.org_id = ?`,
+		 WHERE gm.student_id = ? AND g.org_id = ? AND g.course_id IS NOT NULL`,
 		studentID.String(), orgID.String(),
 	).Scan(&rows).Error
 	if err != nil {
@@ -163,11 +204,14 @@ func (r *GORMGroupRepository) FindCourseIDsByStudent(ctx context.Context, studen
 func toGroupModel(g *entities.Group) *database.GroupModel {
 	m := &database.GroupModel{
 		ID:        g.ID.String(),
-		CourseID:  g.CourseID.String(),
 		OrgID:     g.OrgID.String(),
 		Name:      g.Name,
 		CreatedAt: g.CreatedAt,
 		UpdatedAt: g.UpdatedAt,
+	}
+	if g.CourseID != nil {
+		s := g.CourseID.String()
+		m.CourseID = &s
 	}
 	if g.TeacherID != nil {
 		s := g.TeacherID.String()
@@ -178,15 +222,17 @@ func toGroupModel(g *entities.Group) *database.GroupModel {
 
 func toGroupEntity(m *database.GroupModel) *entities.Group {
 	id, _ := uuid.Parse(m.ID)
-	courseID, _ := uuid.Parse(m.CourseID)
 	orgID, _ := uuid.Parse(m.OrgID)
 	g := &entities.Group{
 		ID:        id,
-		CourseID:  courseID,
 		OrgID:     orgID,
 		Name:      m.Name,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+	}
+	if m.CourseID != nil {
+		courseID, _ := uuid.Parse(*m.CourseID)
+		g.CourseID = &courseID
 	}
 	if m.TeacherID != nil {
 		tid, _ := uuid.Parse(*m.TeacherID)

@@ -2,12 +2,10 @@ export interface ProgressDTO {
   id: string
   user_id: string
   lesson_id: string
-  course_id: string
-  completed: boolean
+  org_id: string
   score?: number
   completed_at?: string
   created_at: string
-  updated_at: string
 }
 
 export interface InsightsDTO {

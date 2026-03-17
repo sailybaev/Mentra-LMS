@@ -2,7 +2,7 @@ import { apiClient } from './client'
 import { ProgressDTO, InsightsDTO, CourseProgressSummary } from '@/types/progress'
 
 export async function markLessonComplete(lessonId: string, score?: number): Promise<ProgressDTO> {
-  const res = await apiClient.post<ProgressDTO>('/progress', { lesson_id: lessonId, score })
+  const res = await apiClient.post<ProgressDTO>(`/progress/lessons/${lessonId}/complete`, { score })
   return res.data
 }
 

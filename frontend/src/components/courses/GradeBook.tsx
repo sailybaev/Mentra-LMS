@@ -110,7 +110,7 @@ function AssignmentRow({ assignment }: { assignment: AssignmentDTO }) {
             </p>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-1 -mr-1">
-            <SubmissionGrader assignmentId={assignment.id} maxPoints={assignment.max_points} />
+            <SubmissionGrader assignmentId={assignment.id} maxPoints={assignment.max_points} dueDate={assignment.due_date} />
           </div>
         </DialogContent>
       </Dialog>

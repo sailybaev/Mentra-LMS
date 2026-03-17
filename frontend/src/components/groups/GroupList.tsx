@@ -129,9 +129,9 @@ export function GroupList({ courseId }: GroupListProps) {
 
           <div className="p-5">
             {activeTab === 'members' ? (
-              <GroupMembers courseId={courseId} groupId={selectedGroup.id} />
+              <GroupMembers groupId={selectedGroup.id} courseId={courseId} />
             ) : (
-              <GroupScheduleList courseId={courseId} groupId={selectedGroup.id} />
+              <GroupScheduleList groupId={selectedGroup.id} courseId={courseId} />
             )}
           </div>
         </div>

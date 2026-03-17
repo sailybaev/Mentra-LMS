@@ -3,7 +3,7 @@ import { AssignmentDTO, SubmissionDTO, CreateAssignmentInput, UpdateAssignmentIn
 
 export async function listAssignments(courseID: string, moduleID: string): Promise<AssignmentDTO[]> {
   const res = await apiClient.get<AssignmentDTO[]>(`/courses/${courseID}/modules/${moduleID}/assignments`);
-  return res.data;
+  return res.data ?? [];
 }
 
 export async function createAssignment(courseID: string, moduleID: string, input: CreateAssignmentInput): Promise<AssignmentDTO> {

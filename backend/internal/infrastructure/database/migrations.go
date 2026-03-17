@@ -214,7 +214,7 @@ func (AnnouncementModel) TableName() string { return "announcements" }
 
 type GroupModel struct {
 	ID        string  `gorm:"type:uuid;primaryKey"`
-	CourseID  string  `gorm:"type:uuid;not null;index"`
+	CourseID  *string `gorm:"type:uuid;index"`
 	OrgID     string  `gorm:"type:uuid;not null;index"`
 	TeacherID *string `gorm:"type:uuid"`
 	Name      string  `gorm:"not null"`

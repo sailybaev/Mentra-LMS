@@ -8,7 +8,7 @@ import (
 
 type Group struct {
 	ID        uuid.UUID
-	CourseID  uuid.UUID
+	CourseID  *uuid.UUID
 	OrgID     uuid.UUID
 	TeacherID *uuid.UUID
 	Name      string

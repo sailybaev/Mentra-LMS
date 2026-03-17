@@ -17,7 +17,7 @@ export async function createModule(courseId: string, input: CreateModuleInput): 
 }
 
 export async function updateModule(courseId: string, moduleId: string, input: UpdateModuleInput): Promise<ModuleDTO> {
-  const res = await apiClient.patch<ModuleDTO>(`/courses/${courseId}/modules/${moduleId}`, input)
+  const res = await apiClient.put<ModuleDTO>(`/courses/${courseId}/modules/${moduleId}`, input)
   return res.data
 }
 

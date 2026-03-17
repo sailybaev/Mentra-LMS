@@ -17,6 +17,7 @@ export function Sidebar() {
   const adminNav = [
     { href: `/${org}/admin`, label: 'Dashboard', icon: LayoutDashboard },
     { href: `/${org}/admin/courses`, label: 'Courses', icon: BookOpen },
+    { href: `/${org}/admin/groups`, label: 'Groups', icon: Users },
     { href: `/${org}/admin/students`, label: 'Students', icon: Users },
     { href: `/${org}/admin/analytics`, label: 'Analytics', icon: BarChart2 },
     { href: `/${org}/admin/ai`, label: 'AI Tools', icon: Sparkles },

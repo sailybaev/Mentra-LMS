@@ -22,6 +22,7 @@ import { AnnouncementList } from '@/components/courses/AnnouncementList'
 import { AnnouncementForm } from '@/components/courses/AnnouncementForm'
 import { cn } from '@/lib/utils/cn'
 import { CourseTeachersSection } from './CourseTeachersSection'
+import { CourseGroupsSection } from './CourseGroupsSection'
 
 export default function AdminCourseDetailPage() {
   const { org, courseId } = useParams<{ org: string; courseId: string }>()
@@ -236,20 +237,7 @@ export default function AdminCourseDetailPage() {
 
         {/* Groups tab */}
         <TabsContent value="groups">
-          <div className="rounded-xl border border-[#e4e2de] bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="h-8 w-8 rounded-lg bg-[#f0eeeb] flex items-center justify-center">
-                <Users className="h-4 w-4 text-[#6b6b6b]" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#1a1a1a]">Student Groups</p>
-                <p className="text-xs text-[#9b9b9b]">Manage groups, schedules, and assignments</p>
-              </div>
-            </div>
-            <Link href={`/${org}/admin/courses/${courseId}/groups`} className="text-xs text-[#059669] hover:underline">
-              Open full groups management →
-            </Link>
-          </div>
+          <CourseGroupsSection courseId={courseId} />
         </TabsContent>
 
         {/* Teachers tab */}

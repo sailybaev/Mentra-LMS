@@ -246,7 +246,24 @@ func NewRouter(deps Dependencies) *gin.Engine {
 		deps.AnnouncementHandler.Delete,
 	)
 
-	// Groups
+	// Standalone groups (org-level management, admin only)
+	orgGroups := protected.Group("/groups")
+	orgGroups.Use(middleware.RequireRole(entities.RoleAdmin))
+	orgGroups.GET("", deps.GroupHandler.ListByOrg)
+	orgGroups.POST("", deps.GroupHandler.CreateStandalone)
+	orgGroups.GET("/:groupID", deps.GroupHandler.Get)
+	orgGroups.PUT("/:groupID", deps.GroupHandler.Update)
+	orgGroups.DELETE("/:groupID", deps.GroupHandler.Delete)
+	orgGroups.POST("/:groupID/assign-course", deps.GroupHandler.AssignToCourse)
+	orgGroups.DELETE("/:groupID/assign-course", deps.GroupHandler.UnassignFromCourse)
+	orgGroups.GET("/:groupID/members", deps.GroupHandler.ListMembers)
+	orgGroups.POST("/:groupID/members", deps.GroupHandler.AddMember)
+	orgGroups.DELETE("/:groupID/members/:studentID", deps.GroupHandler.RemoveMember)
+	orgGroups.GET("/:groupID/schedules", deps.GroupHandler.ListSchedules)
+	orgGroups.POST("/:groupID/schedules", deps.GroupHandler.AddSchedule)
+	orgGroups.DELETE("/:groupID/schedules/:schedID", deps.GroupHandler.DeleteSchedule)
+
+	// Groups (course-scoped)
 	courses.GET("/:id/groups", deps.GroupHandler.List)
 	courses.POST("/:id/groups",
 		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),

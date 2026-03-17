@@ -14,14 +14,14 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 interface GroupScheduleListProps {
-  courseId: string
   groupId: string
+  courseId?: string
 }
 
-export function GroupScheduleList({ courseId, groupId }: GroupScheduleListProps) {
-  const { data: schedulesData, isLoading } = useGroupSchedules(courseId, groupId)
-  const addSchedule = useAddSchedule(courseId, groupId)
-  const deleteSchedule = useDeleteSchedule(courseId, groupId)
+export function GroupScheduleList({ groupId, courseId }: GroupScheduleListProps) {
+  const { data: schedulesData, isLoading } = useGroupSchedules(groupId, courseId)
+  const addSchedule = useAddSchedule(groupId, courseId)
+  const deleteSchedule = useDeleteSchedule(groupId, courseId)
 
   const [showForm, setShowForm] = useState(false)
   const [dayOfWeek, setDayOfWeek] = useState('1')

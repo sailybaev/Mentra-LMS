@@ -15,9 +15,10 @@ import { CheckCircle2, Clock, Download, ExternalLink, FileText, Link2, Paperclip
 interface SubmissionGraderProps {
   assignmentId: string
   maxPoints: number
+  dueDate?: string | null
 }
 
-export function SubmissionGrader({ assignmentId, maxPoints }: SubmissionGraderProps) {
+export function SubmissionGrader({ assignmentId, maxPoints, dueDate }: SubmissionGraderProps) {
   const { data: submissions, isLoading } = useListSubmissions(assignmentId)
   const gradeSubmission = useGradeSubmission(assignmentId)
 
@@ -44,6 +45,7 @@ export function SubmissionGrader({ assignmentId, maxPoints }: SubmissionGraderPr
           key={submission.id}
           submission={submission}
           maxPoints={maxPoints}
+          dueDate={dueDate}
           onGrade={(score, feedback) =>
             gradeSubmission.mutateAsync({ submissionID: submission.id, score, feedback })
           }
@@ -56,11 +58,13 @@ export function SubmissionGrader({ assignmentId, maxPoints }: SubmissionGraderPr
 interface SubmissionRowProps {
   submission: SubmissionDTO
   maxPoints: number
+  dueDate?: string | null
   onGrade: (score: number, feedback: string) => Promise<SubmissionDTO>
 }
 
-function SubmissionRow({ submission, maxPoints, onGrade }: SubmissionRowProps) {
+function SubmissionRow({ submission, maxPoints, dueDate, onGrade }: SubmissionRowProps) {
   const isGraded = submission.score !== null
+  const isLate = !!(dueDate && new Date(submission.submitted_at) > new Date(dueDate))
   const [score, setScore] = useState(submission.score?.toString() ?? '')
   const [feedback, setFeedback] = useState(submission.feedback ?? '')
   const [saving, setSaving] = useState(false)
@@ -106,9 +110,14 @@ function SubmissionRow({ submission, maxPoints, onGrade }: SubmissionRowProps) {
             <p className="text-xs font-mono text-[#6b6b6b]">
               {submission.student_id.slice(0, 8)}…
             </p>
-            <div className="flex items-center gap-1 text-[11px] text-[#9b9b9b]">
+            <div className="flex items-center gap-1.5 text-[11px] text-[#9b9b9b]">
               <Clock className="h-3 w-3" />
               {submittedDate}
+              {isLate && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 rounded px-1 py-0.5 leading-none">
+                  Late
+                </span>
+              )}
             </div>
           </div>
         </div>

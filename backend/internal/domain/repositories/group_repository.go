@@ -11,8 +11,11 @@ type GroupRepository interface {
 	CreateGroup(ctx context.Context, g *entities.Group) error
 	GetGroupByID(ctx context.Context, id, orgID uuid.UUID) (*entities.Group, error)
 	ListGroupsByCourse(ctx context.Context, courseID, orgID uuid.UUID) ([]entities.Group, error)
+	ListGroupsByOrg(ctx context.Context, orgID uuid.UUID) ([]entities.Group, error)
 	UpdateGroup(ctx context.Context, g *entities.Group) error
 	DeleteGroup(ctx context.Context, id, orgID uuid.UUID) error
+	AssignToCourse(ctx context.Context, groupID, courseID, orgID uuid.UUID) error
+	UnassignFromCourse(ctx context.Context, groupID, orgID uuid.UUID) error
 
 	AddSchedule(ctx context.Context, s *entities.GroupSchedule) error
 	ListSchedulesByGroup(ctx context.Context, groupID uuid.UUID) ([]entities.GroupSchedule, error)

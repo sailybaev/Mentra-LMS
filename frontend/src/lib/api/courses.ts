@@ -7,9 +7,9 @@ export async function listCourses(params?: { page?: number; page_size?: number }
   return res.data ?? { data: [], meta: { page: params?.page ?? 1, page_size: params?.page_size ?? 10, total: 0 } }
 }
 
-export async function getCourse(id: string): Promise<CourseDTO> {
+export async function getCourse(id: string): Promise<CourseDTO | null> {
   const res = await apiClient.get<CourseDTO>(`/courses/${id}`)
-  return res.data
+  return res.data ?? null
 }
 
 export async function createCourse(input: CreateCourseInput): Promise<CourseDTO> {

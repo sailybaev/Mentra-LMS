@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, ClipboardList, Pencil, Upload, X } from 'lucide-react'
+import { GripVertical, Trash2, ClipboardList, Pencil, Upload, X, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { AssignmentDTO } from '@/types/assignment'
 import { Button } from '@/components/ui/button'
@@ -21,9 +21,10 @@ interface AssignmentItemProps {
   courseId: string
   assignment: AssignmentDTO
   onDelete: (id: string) => void
+  onUpdate: (updated: AssignmentDTO) => void
 }
 
-export function AssignmentItem({ assignment, moduleId, courseId, onDelete }: AssignmentItemProps) {
+export function AssignmentItem({ assignment, moduleId, courseId, onDelete, onUpdate }: AssignmentItemProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [editTitle, setEditTitle] = useState(assignment.title)
@@ -77,16 +78,17 @@ export function AssignmentItem({ assignment, moduleId, courseId, onDelete }: Ass
   const handleSave = async () => {
     setSaving(true)
     try {
-      await updateAssignment.mutateAsync({
+      const updated = await updateAssignment.mutateAsync({
         id: assignment.id,
         input: {
           title: editTitle,
           description: editDescription,
           max_points: editMaxPoints,
-          due_date: editDueDate || undefined,
+          due_date: editDueDate ? new Date(editDueDate).toISOString() : undefined,
           allow_late_submission: editAllowLate,
         },
       })
+      onUpdate(updated)
       setEditOpen(false)
       toast.success('Assignment updated')
     } catch {
@@ -128,6 +130,19 @@ export function AssignmentItem({ assignment, moduleId, courseId, onDelete }: Ass
     }
   }
 
+  const handleToggleLate = async () => {
+    try {
+      const updated = await updateAssignment.mutateAsync({
+        id: assignment.id,
+        input: { allow_late_submission: !assignment.allow_late_submission },
+      })
+      onUpdate(updated)
+      toast.success(updated.allow_late_submission ? 'Late submissions allowed' : 'Late submissions disabled')
+    } catch {
+      toast.error('Failed to update assignment')
+    }
+  }
+
   const dueLabel = assignment.due_date
     ? new Date(assignment.due_date).toLocaleDateString()
     : null
@@ -144,6 +159,17 @@ export function AssignmentItem({ assignment, moduleId, courseId, onDelete }: Ass
         {dueLabel && (
           <span className="text-xs text-ink-subtle">Due {dueLabel}</span>
         )}
+        <button
+          onClick={handleToggleLate}
+          title={assignment.allow_late_submission ? 'Late submissions allowed — click to disable' : 'Late submissions disabled — click to allow'}
+          className={assignment.allow_late_submission
+            ? 'flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors'
+            : 'flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-ink-subtle bg-transparent hover:bg-surface-100 transition-colors'
+          }
+        >
+          <Clock className="h-3 w-3" />
+          {assignment.allow_late_submission ? 'Late OK' : 'No late'}
+        </button>
         <Button
           size="sm"
           variant="ghost"

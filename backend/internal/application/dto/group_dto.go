@@ -14,12 +14,16 @@ type UpdateGroupRequest struct {
 
 type GroupDTO struct {
 	ID        string    `json:"id"`
-	CourseID  string    `json:"course_id"`
+	CourseID  *string   `json:"course_id,omitempty"`
 	OrgID     string    `json:"org_id"`
-	TeacherID *string   `json:"teacher_id"`
+	TeacherID *string   `json:"teacher_id,omitempty"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type AssignCourseRequest struct {
+	CourseID string `json:"course_id" binding:"required,uuid"`
 }
 
 type CreateGroupScheduleRequest struct {

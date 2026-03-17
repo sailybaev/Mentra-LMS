@@ -1,18 +1,81 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as groupsApi from '@/lib/api/groups'
 import {
-  CreateGroupInput, UpdateGroupInput, CreateGroupScheduleInput, AddMemberInput,
+  CreateGroupInput, UpdateGroupInput, CreateGroupScheduleInput, AddMemberInput, AssignGroupInput,
 } from '@/types/group'
 
 export const groupKeys = {
   all: ['groups'] as const,
+  orgList: () => [...groupKeys.all, 'org-list'] as const,
   lists: () => [...groupKeys.all, 'list'] as const,
   list: (courseId: string) => [...groupKeys.lists(), courseId] as const,
   details: () => [...groupKeys.all, 'detail'] as const,
   detail: (courseId: string, groupId: string) => [...groupKeys.details(), courseId, groupId] as const,
-  members: (courseId: string, groupId: string) => [...groupKeys.detail(courseId, groupId), 'members'] as const,
-  schedules: (courseId: string, groupId: string) => [...groupKeys.detail(courseId, groupId), 'schedules'] as const,
+  // courseId optional: omit it for standalone (org-level) member/schedule queries
+  members: (groupId: string, courseId?: string) => ['groups', groupId, 'members', courseId ?? 'standalone'] as const,
+  schedules: (groupId: string, courseId?: string) => ['groups', groupId, 'schedules', courseId ?? 'standalone'] as const,
   myGroup: (courseId: string) => [...groupKeys.all, 'my-group', courseId] as const,
+}
+
+export function useOrgGroups() {
+  return useQuery({
+    queryKey: groupKeys.orgList(),
+    queryFn: () => groupsApi.listOrgGroups(),
+  })
+}
+
+export function useCreateOrgGroup() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CreateGroupInput) => groupsApi.createOrgGroup(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.orgList() }),
+  })
+}
+
+export function useUpdateOrgGroup() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateGroupInput }) =>
+      groupsApi.updateOrgGroup(id, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: groupKeys.orgList() })
+      qc.invalidateQueries({ queryKey: groupKeys.lists() })
+    },
+  })
+}
+
+export function useDeleteOrgGroup() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (groupId: string) => groupsApi.deleteOrgGroup(groupId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: groupKeys.orgList() })
+      qc.invalidateQueries({ queryKey: groupKeys.lists() })
+    },
+  })
+}
+
+export function useAssignGroupToCourse() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ groupId, input }: { groupId: string; input: AssignGroupInput }) =>
+      groupsApi.assignGroupToCourse(groupId, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: groupKeys.orgList() })
+      qc.invalidateQueries({ queryKey: groupKeys.lists() })
+    },
+  })
+}
+
+export function useUnassignGroupFromCourse() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (groupId: string) => groupsApi.unassignGroupFromCourse(groupId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: groupKeys.orgList() })
+      qc.invalidateQueries({ queryKey: groupKeys.lists() })
+    },
+  })
 }
 
 export function useGroups(courseId: string) {
@@ -59,51 +122,51 @@ export function useDeleteGroup(courseId: string) {
   })
 }
 
-export function useGroupMembers(courseId: string, groupId: string) {
+export function useGroupMembers(groupId: string, courseId?: string) {
   return useQuery({
-    queryKey: groupKeys.members(courseId, groupId),
-    queryFn: () => groupsApi.listMembers(courseId, groupId),
-    enabled: !!(courseId && groupId),
+    queryKey: groupKeys.members(groupId, courseId),
+    queryFn: () => groupsApi.listMembers(groupId, courseId),
+    enabled: !!groupId,
   })
 }
 
-export function useAddMember(courseId: string, groupId: string) {
+export function useAddMember(groupId: string, courseId?: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: AddMemberInput) => groupsApi.addMember(courseId, groupId, input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.members(courseId, groupId) }),
+    mutationFn: (input: AddMemberInput) => groupsApi.addMember(groupId, input, courseId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.members(groupId, courseId) }),
   })
 }
 
-export function useRemoveMember(courseId: string, groupId: string) {
+export function useRemoveMember(groupId: string, courseId?: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (studentId: string) => groupsApi.removeMember(courseId, groupId, studentId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.members(courseId, groupId) }),
+    mutationFn: (studentId: string) => groupsApi.removeMember(groupId, studentId, courseId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.members(groupId, courseId) }),
   })
 }
 
-export function useGroupSchedules(courseId: string, groupId: string) {
+export function useGroupSchedules(groupId: string, courseId?: string) {
   return useQuery({
-    queryKey: groupKeys.schedules(courseId, groupId),
-    queryFn: () => groupsApi.listSchedules(courseId, groupId),
-    enabled: !!(courseId && groupId),
+    queryKey: groupKeys.schedules(groupId, courseId),
+    queryFn: () => groupsApi.listSchedules(groupId, courseId),
+    enabled: !!groupId,
   })
 }
 
-export function useAddSchedule(courseId: string, groupId: string) {
+export function useAddSchedule(groupId: string, courseId?: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: CreateGroupScheduleInput) => groupsApi.addSchedule(courseId, groupId, input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.schedules(courseId, groupId) }),
+    mutationFn: (input: CreateGroupScheduleInput) => groupsApi.addSchedule(groupId, input, courseId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.schedules(groupId, courseId) }),
   })
 }
 
-export function useDeleteSchedule(courseId: string, groupId: string) {
+export function useDeleteSchedule(groupId: string, courseId?: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (scheduleId: string) => groupsApi.deleteSchedule(courseId, groupId, scheduleId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.schedules(courseId, groupId) }),
+    mutationFn: (scheduleId: string) => groupsApi.deleteSchedule(groupId, scheduleId, courseId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.schedules(groupId, courseId) }),
   })
 }
 

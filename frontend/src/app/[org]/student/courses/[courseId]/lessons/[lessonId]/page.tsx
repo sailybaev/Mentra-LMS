@@ -6,7 +6,7 @@ import { ChevronLeft, CheckCircle, BookOpen, Video, HelpCircle, FileIcon, Link2 
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useModules } from '@/lib/queries/modules.queries'
-import { useMarkComplete } from '@/lib/queries/progress.queries'
+import { useMarkComplete, useProgress } from '@/lib/queries/progress.queries'
 import * as lessonsApi from '@/lib/api/lessons'
 import { LessonViewer } from '@/components/courses/LessonViewer'
 import { Button } from '@/components/ui/button'
@@ -54,6 +54,10 @@ export default function LessonPage() {
 
   const { data: lesson, isLoading } = useLessonFromCourse(courseId, lessonId)
   const markComplete = useMarkComplete()
+  const { data: progressList } = useProgress(courseId)
+  const isCompleted = Array.isArray(progressList)
+    ? progressList.some((p) => p.lesson_id === lessonId && !!p.completed_at)
+    : false
 
   const handleMarkComplete = async (score?: number) => {
     try {
@@ -131,12 +135,17 @@ export default function LessonPage() {
         <div className="flex gap-2 mt-6">
           <Button
             onClick={() => handleMarkComplete()}
-            disabled={markComplete.isPending}
+            disabled={markComplete.isPending || isCompleted}
             size="sm"
-            className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border-0 h-8 px-4 text-xs"
+            className={cn(
+              'border-0 h-8 px-4 text-xs',
+              isCompleted
+                ? 'bg-[#059669] hover:bg-[#059669] text-white cursor-default'
+                : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white'
+            )}
           >
             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
-            {markComplete.isPending ? 'Saving…' : 'Mark complete'}
+            {markComplete.isPending ? 'Saving…' : isCompleted ? 'Completed' : 'Mark complete'}
           </Button>
           <Button
             variant="ghost"

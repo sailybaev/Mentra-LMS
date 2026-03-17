@@ -195,6 +195,7 @@ export function ModuleItem({ courseId, module, onUpdate, onLessonsChange }: Modu
                   courseId={courseId}
                   assignment={a}
                   onDelete={(id) => setAssignments((prev) => prev.filter((x) => x.id !== id))}
+                  onUpdate={(updated) => setAssignments((prev) => prev.map((x) => x.id === updated.id ? updated : x))}
                 />
               ))}
             </div>

@@ -46,12 +46,75 @@ func (h *GroupHandler) Create(c *gin.Context) {
 		return
 	}
 	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
-	g, err := h.groupUC.CreateGroup(c.Request.Context(), courseID, orgID, req)
+	g, err := h.groupUC.CreateGroup(c.Request.Context(), &courseID, orgID, req)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"data": g})
+}
+
+func (h *GroupHandler) ListByOrg(c *gin.Context) {
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	groups, err := h.groupUC.ListByOrg(c.Request.Context(), orgID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": groups})
+}
+
+func (h *GroupHandler) CreateStandalone(c *gin.Context) {
+	var req dto.CreateGroupRequest
+	if err := bindJSON(c, &req); err != nil {
+		c.Error(err)
+		return
+	}
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	g, err := h.groupUC.CreateGroup(c.Request.Context(), nil, orgID, req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"data": g})
+}
+
+func (h *GroupHandler) AssignToCourse(c *gin.Context) {
+	groupID, err := uuid.Parse(c.Param("groupID"))
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid group id"))
+		return
+	}
+	var req dto.AssignCourseRequest
+	if err := bindJSON(c, &req); err != nil {
+		c.Error(err)
+		return
+	}
+	courseID, err := uuid.Parse(req.CourseID)
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid course_id"))
+		return
+	}
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	if err := h.groupUC.AssignToCourse(c.Request.Context(), groupID, courseID, orgID); err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func (h *GroupHandler) UnassignFromCourse(c *gin.Context) {
+	groupID, err := uuid.Parse(c.Param("groupID"))
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid group id"))
+		return
+	}
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	if err := h.groupUC.UnassignFromCourse(c.Request.Context(), groupID, orgID); err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
 }
 
 func (h *GroupHandler) Get(c *gin.Context) {

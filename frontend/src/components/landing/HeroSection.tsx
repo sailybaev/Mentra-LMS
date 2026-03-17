@@ -3,40 +3,31 @@
 import Link from 'next/link'
 import { useRef } from 'react'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
-import { ArrowRight, Sparkles, BookOpen, BarChart2, CheckCircle } from 'lucide-react'
+import { ArrowRight, BookOpen, CheckCircle2, BarChart2, Sparkles, Users } from 'lucide-react'
 
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
 }
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 }
 
-function MagneticButton({
-  href,
-  children,
-  className,
-}: {
-  href: string
-  children: React.ReactNode
-  className: string
-}) {
+function MagneticButton({ href, children, className }: { href: string; children: React.ReactNode; className: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
   const y = useMotionValue(0)
-  const springX = useSpring(x, { stiffness: 250, damping: 20 })
-  const springY = useSpring(y, { stiffness: 250, damping: 20 })
-
+  const sx = useSpring(x, { stiffness: 280, damping: 22 })
+  const sy = useSpring(y, { stiffness: 280, damping: 22 })
   return (
     <motion.div
       ref={ref}
-      style={{ x: springX, y: springY }}
+      style={{ x: sx, y: sy }}
       onMouseMove={(e) => {
-        const rect = ref.current!.getBoundingClientRect()
-        x.set((e.clientX - rect.left - rect.width / 2) * 0.3)
-        y.set((e.clientY - rect.top - rect.height / 2) * 0.3)
+        const r = ref.current!.getBoundingClientRect()
+        x.set((e.clientX - r.left - r.width / 2) * 0.25)
+        y.set((e.clientY - r.top - r.height / 2) * 0.25)
       }}
       onMouseLeave={() => { x.set(0); y.set(0) }}
       whileTap={{ scale: 0.97 }}
@@ -46,216 +37,274 @@ function MagneticButton({
   )
 }
 
-/* ─── Left dark panel ─────────────────────────────────────────── */
-function AIPanel() {
-  const quizLines = [
-    'What is gradient descent?',
-    'Which optimizer converges fastest?',
-    'Define overfitting in 1 sentence.',
+/* Live course UI mockup */
+function ProductMockup() {
+  const modules = [
+    { title: 'Module 1 — Foundations', lessons: 4, complete: 4 },
+    { title: 'Module 2 — Core Concepts', lessons: 6, complete: 3 },
+    { title: 'Module 3 — Applied Practice', lessons: 5, complete: 0 },
+  ]
+  const students = [
+    { initials: 'AK', score: 94, status: 'Passed' },
+    { initials: 'ML', score: 87, status: 'Passed' },
+    { initials: 'JB', score: 72, status: 'In Progress' },
+    { initials: 'RS', score: null, status: 'Not started' },
   ]
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-white/60" />
-          <span className="text-xs font-semibold text-white/60 uppercase tracking-widest">AI Quiz Generator</span>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium text-white/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-white/80 animate-pulse" />
-          Live
-        </span>
+    <div className="rounded-2xl overflow-hidden border border-[#E2E0DB] bg-white shadow-[0_2px_40px_rgba(0,0,0,0.07)]">
+      {/* Window chrome */}
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#F0EFEB] bg-[#FAFAF8]">
+        <div className="h-2.5 w-2.5 rounded-full bg-[#E8E7E3]" />
+        <div className="h-2.5 w-2.5 rounded-full bg-[#E8E7E3]" />
+        <div className="h-2.5 w-2.5 rounded-full bg-[#E8E7E3]" />
+        <div className="ml-3 flex-1 h-5 rounded-md bg-[#F0EFEB] max-w-[200px]" />
       </div>
 
-      <div className="flex-1 space-y-2">
-        {quizLines.map((line, i) => (
-          <motion.div
-            key={line}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8 + i * 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-start gap-2.5 rounded-xl bg-white/[0.06] px-3.5 py-2.5"
-          >
-            <CheckCircle className="h-3.5 w-3.5 text-white/40 mt-0.5 shrink-0" />
-            <span className="text-sm text-white/80 leading-snug">{line}</span>
-          </motion.div>
-        ))}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.6 }}
-          className="flex items-center gap-1.5 px-3.5 py-2"
-        >
-          <div className="flex gap-1">
-            {[0, 1, 2].map((i) => (
+      <div className="grid grid-cols-[1fr_1px_1fr] min-h-[340px]">
+        {/* Left: Course content */}
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-[12px] font-semibold text-[#111110] tracking-tight">Introduction to ML</p>
+              <p className="text-[11px] text-[#9B9B97] mt-0.5">142 students enrolled</p>
+            </div>
+            <div className="flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-1">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-semibold text-emerald-700">Published</span>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] text-[#9B9B97]">Overall progress</span>
+              <span className="text-[11px] font-semibold text-[#111110]">58%</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-[#F0EFEB] overflow-hidden">
               <motion.div
-                key={i}
-                className="h-1 w-1 rounded-full bg-white/30"
-                animate={{ opacity: [0.3, 0.9, 0.3] }}
-                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                className="h-full rounded-full bg-emerald-500"
+                initial={{ width: 0 }}
+                animate={{ width: '58%' }}
+                transition={{ delay: 0.8, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
               />
+            </div>
+          </div>
+
+          {/* Modules */}
+          <div className="space-y-1.5">
+            {modules.map((mod, i) => (
+              <motion.div
+                key={mod.title}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
+                className="flex items-center gap-2.5 rounded-xl border border-[#F0EFEB] bg-[#FAFAF8] px-3 py-2"
+              >
+                <div className={`h-6 w-6 rounded-lg flex items-center justify-center shrink-0 ${
+                  mod.complete === mod.lessons ? 'bg-emerald-500' : 'bg-[#F0EFEB]'
+                }`}>
+                  {mod.complete === mod.lessons
+                    ? <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                    : <BookOpen className="h-3 w-3 text-[#9B9B97]" />
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-medium text-[#111110] truncate">{mod.title}</p>
+                </div>
+                <span className="text-[10px] text-[#9B9B97] shrink-0">{mod.complete}/{mod.lessons}</span>
+              </motion.div>
             ))}
           </div>
-          <span className="text-xs text-white/30">Generating question 4…</span>
-        </motion.div>
-      </div>
-
-      <div className="border-t border-white/15 pt-4 grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-2xl font-black text-white tracking-tight">2.1s</p>
-          <p className="text-xs text-white/50 mt-0.5">avg generation</p>
         </div>
-        <div>
-          <p className="text-2xl font-black text-white tracking-tight">94%</p>
-          <p className="text-xs text-white/50 mt-0.5">avg score</p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-/* ─── Right light panel ───────────────────────────────────────── */
-function DashboardPanel() {
-  const courses = [
-    { title: 'Introduction to ML', students: 142, status: 'published' },
-    { title: 'Web Development 101', students: 89, status: 'published' },
-    { title: 'Data Structures', students: 0, status: 'draft' },
-  ]
-  const bars = [38, 55, 44, 71, 60, 84, 76]
+        {/* Divider */}
+        <div className="bg-[#F0EFEB]" />
 
-  return (
-    <div className="flex flex-col gap-5 h-full" style={{ fontSize: 11 }}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="font-semibold text-zinc-900" style={{ fontSize: 13 }}>Courses</p>
-          <p className="text-zinc-400 mt-0.5">231 students enrolled</p>
-        </div>
-        <div className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[10px] text-white font-semibold cursor-default">
-          + New course
-        </div>
-      </div>
+        {/* Right: Student grades */}
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[12px] font-semibold text-[#111110] tracking-tight">Recent grades</p>
+            <div className="flex items-center gap-1">
+              <BarChart2 className="h-3 w-3 text-[#9B9B97]" />
+              <span className="text-[10px] text-[#9B9B97]">AI-graded</span>
+            </div>
+          </div>
 
-      {/* Course rows */}
-      <div className="flex-1 space-y-1.5">
-        {courses.map((c, i) => (
+          <div className="space-y-1.5">
+            {students.map((s, i) => (
+              <motion.div
+                key={s.initials}
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 + i * 0.1, duration: 0.4 }}
+                className="flex items-center gap-2.5 rounded-xl border border-[#F0EFEB] px-3 py-2"
+              >
+                <div className="h-6 w-6 rounded-full bg-[#111110] flex items-center justify-center shrink-0">
+                  <span className="text-[9px] font-bold text-white">{s.initials}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#111110]">{s.status}</span>
+                    {s.score !== null && (
+                      <span className={`text-[11px] font-bold ${s.score >= 80 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {s.score}%
+                      </span>
+                    )}
+                  </div>
+                  {s.score !== null && (
+                    <div className="mt-1 h-1 rounded-full bg-[#F0EFEB] overflow-hidden">
+                      <motion.div
+                        className={`h-full rounded-full ${s.score >= 80 ? 'bg-emerald-400' : 'bg-amber-400'}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${s.score}%` }}
+                        transition={{ delay: 0.9 + i * 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* AI insight */}
           <motion.div
-            key={c.title}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 + i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center justify-between rounded-xl border border-zinc-100 bg-white px-3 py-2.5 hover:border-zinc-200 transition-colors cursor-default"
+            transition={{ delay: 1.3, duration: 0.5 }}
+            className="mt-3 flex items-start gap-2 rounded-xl bg-[#F0FDF4] border border-emerald-100 px-3 py-2.5"
           >
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-zinc-100 flex items-center justify-center shrink-0">
-                <BookOpen className="h-3 w-3 text-zinc-400" />
-              </div>
-              <span className="font-medium text-zinc-700">{c.title}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              {c.students > 0 && <span className="text-zinc-400">{c.students} students</span>}
-              <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${
-                c.status === 'published' ? 'bg-zinc-100 text-zinc-500' : 'bg-zinc-50 text-zinc-300'
-              }`}>
-                {c.status}
-              </span>
-            </div>
+            <Sparkles className="h-3 w-3 text-emerald-600 mt-0.5 shrink-0" />
+            <p className="text-[10px] text-emerald-700 leading-relaxed">
+              <span className="font-semibold">AI Insight:</span> Module 2 has a 34% drop-off rate — suggest adding a review quiz.
+            </p>
           </motion.div>
-        ))}
+        </div>
       </div>
 
-      {/* Mini analytics bar */}
-      <div className="border-t border-zinc-100 pt-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <BarChart2 className="h-3 w-3 text-zinc-400" />
-            <span className="text-zinc-500 font-medium">Completion rate</span>
-          </div>
-          <span className="font-semibold text-zinc-900">↑ 12% this week</span>
-        </div>
-        <div className="flex items-end gap-1 h-8">
-          {bars.map((h, i) => (
-            <motion.div
-              key={i}
-              className="flex-1 rounded-sm bg-zinc-900"
-              style={{ height: `${h}%`, opacity: 0.1 + i * 0.13 }}
-              initial={{ scaleY: 0, originY: '100%' }}
-              animate={{ scaleY: 1 }}
-              transition={{ delay: 0.9 + i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            />
+      {/* Bottom bar */}
+      <div className="flex items-center justify-between px-5 py-3 bg-[#FAFAF8] border-t border-[#F0EFEB]">
+        <div className="flex items-center gap-3">
+          {[
+            { Icon: Users, label: '142 students' },
+            { Icon: CheckCircle2, label: '83% avg completion' },
+          ].map(({ Icon, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <Icon className="h-3 w-3 text-[#9B9B97]" />
+              <span className="text-[11px] text-[#6B6B67]">{label}</span>
+            </div>
           ))}
         </div>
+        <motion.div
+          className="flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 cursor-pointer"
+          whileHover={{ scale: 1.03 }}
+        >
+          <span className="text-[10px] font-semibold text-white">View gradebook</span>
+        </motion.div>
       </div>
     </div>
   )
 }
 
-/* ─── Hero ────────────────────────────────────────────────────── */
 export function HeroSection() {
   return (
-    <section className="relative pt-14 overflow-hidden bg-white">
-      {/* Top content — centered */}
-      <div className="mx-auto max-w-3xl px-6 pt-20 pb-10 text-center">
-        <motion.div variants={stagger} initial="hidden" animate="show">
-          <motion.div variants={fadeUp} className="mb-7 inline-flex">
-            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-1.5 text-xs font-medium text-zinc-500">
-              Learning management for universities
+    <section className="relative pt-[60px] overflow-hidden">
+      {/* Subtle grid bg */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(17,17,16,0.05) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+      {/* Fade top gradient */}
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#FAFAF8] to-transparent z-10" />
+
+      <div className="relative z-10 mx-auto max-w-[1120px] px-8 pt-20 pb-16">
+        <motion.div variants={stagger} initial="hidden" animate="show" className="flex flex-col items-center text-center">
+
+          {/* Eyebrow */}
+          <motion.div variants={fadeUp} className="mb-8">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#E8E7E3] bg-white px-4 py-1.5 text-[12px] font-medium text-[#6B6B67]">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Built for universities &amp; academies
             </span>
           </motion.div>
 
+          {/* Headline */}
           <motion.h1
             variants={fadeUp}
-            className="font-extrabold text-zinc-950 leading-[1.0] tracking-[-0.03em]"
-            style={{ fontSize: 'clamp(44px, 6vw, 72px)' }}
+            className="max-w-[780px] text-[#111110] leading-[1.0] tracking-[-0.04em]"
+            style={{ fontSize: 'clamp(48px, 6.5vw, 82px)' }}
           >
-            For universities that take
-            <br />
-            learning seriously.
+            The LMS your students{' '}
+            <span
+              className="text-[#111110]"
+              style={{
+                fontFamily: 'var(--font-display), Georgia, serif',
+                fontStyle: 'italic',
+                fontWeight: 400,
+              }}
+            >
+              actually open.
+            </span>
           </motion.h1>
 
+          {/* Subheadline */}
           <motion.p
             variants={fadeUp}
-            className="mx-auto mt-5 max-w-sm text-[17px] text-zinc-500 leading-relaxed"
+            className="mt-6 max-w-[440px] text-[17px] text-[#6B6B67] leading-[1.65] tracking-[-0.01em]"
           >
-            The modern LMS your faculty will adopt, your students will open, and your office can report on.
+            The modern learning platform your faculty will adopt, your students will engage with, and your leadership can report on.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="mt-8 flex flex-col sm:flex-row gap-3 justify-center items-center">
+          {/* CTAs */}
+          <motion.div variants={fadeUp} className="mt-9 flex flex-col sm:flex-row gap-3 items-center">
             <MagneticButton
               href="/register"
-              className="group inline-flex items-center gap-2 rounded-full bg-emerald-600 px-7 py-3.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors duration-200"
+              className="group relative overflow-hidden inline-flex items-center gap-2 rounded-[12px] bg-[#111110] px-7 py-3.5 text-[14px] font-semibold text-white hover:bg-[#2A2A28] transition-colors duration-200"
             >
+              <span className="pointer-events-none absolute inset-0 -translate-x-full -skew-x-12 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent group-hover:translate-x-[250%] transition-transform duration-700 ease-in-out" />
               Request a demo
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </MagneticButton>
             <MagneticButton
               href="#pricing"
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-7 py-3.5 text-sm font-medium text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-[12px] border border-[#E2E0DB] bg-white px-7 py-3.5 text-[14px] font-medium text-[#6B6B67] hover:text-[#111110] hover:border-[#C8C6C1] transition-all duration-200"
             >
               See pricing
             </MagneticButton>
           </motion.div>
+
+          {/* Trust signals */}
+          <motion.div
+            variants={fadeUp}
+            className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-1.5"
+          >
+            {['No credit card', '14-day free trial', 'Cancel anytime'].map((item) => (
+              <span key={item} className="flex items-center gap-1.5 text-[12px] text-[#9B9B97]">
+                <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+                {item}
+              </span>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* Product mockup */}
+        <motion.div
+          className="mt-14"
+          initial={{ opacity: 0, y: 48 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.div
+            animate={{ y: [0, -7, 0] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 1.6 }}
+          >
+            <ProductMockup />
+          </motion.div>
         </motion.div>
       </div>
-
-      {/* Product preview container */}
-      <motion.div
-        className="mx-auto max-w-6xl px-6 pb-0"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="overflow-hidden rounded-t-3xl border border-b-0 border-zinc-200 grid grid-cols-1 md:grid-cols-[2fr_3fr]" style={{ minHeight: 360 }}>
-          {/* Left — accent AI panel */}
-          <div className="bg-emerald-600 p-8 flex flex-col">
-            <AIPanel />
-          </div>
-          {/* Right — light dashboard panel */}
-          <div className="bg-zinc-50 border-t md:border-t-0 md:border-l border-zinc-200 p-8 flex flex-col">
-            <DashboardPanel />
-          </div>
-        </div>
-      </motion.div>
     </section>
   )
 }

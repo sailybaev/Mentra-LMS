@@ -1,0 +1,275 @@
+'use client'
+
+import { useRef, useState } from 'react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical, Trash2, ClipboardList, Pencil, Upload, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { AssignmentDTO } from '@/types/assignment'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { useUpdateAssignment } from '@/lib/queries/assignments.queries'
+import { useAttachments, useCreateAttachment, useDeleteAttachment } from '@/lib/queries/attachments.queries'
+import { uploadFile } from '@/lib/api/upload'
+
+interface AssignmentItemProps {
+  moduleId: string
+  courseId: string
+  assignment: AssignmentDTO
+  onDelete: (id: string) => void
+}
+
+export function AssignmentItem({ assignment, moduleId, courseId, onDelete }: AssignmentItemProps) {
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editTitle, setEditTitle] = useState(assignment.title)
+  const [editDescription, setEditDescription] = useState(assignment.description ?? '')
+  const [editMaxPoints, setEditMaxPoints] = useState(assignment.max_points)
+  const [editDueDate, setEditDueDate] = useState(
+    assignment.due_date ? new Date(assignment.due_date).toISOString().slice(0, 16) : ''
+  )
+  const [editAllowLate, setEditAllowLate] = useState(assignment.allow_late_submission)
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const updateAssignment = useUpdateAssignment(courseId, moduleId)
+  const { data: attachments = [] } = useAttachments('assignment', assignment.id)
+  const createAttachment = useCreateAttachment()
+  const deleteAttachment = useDeleteAttachment('assignment', assignment.id)
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: assignment.id,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      onDelete(assignment.id)
+      toast.success('Assignment deleted')
+    } catch {
+      toast.error('Failed to delete assignment')
+      setIsDeleting(false)
+    }
+  }
+
+  const handleEdit = () => {
+    setEditTitle(assignment.title)
+    setEditDescription(assignment.description ?? '')
+    setEditMaxPoints(assignment.max_points)
+    setEditDueDate(
+      assignment.due_date ? new Date(assignment.due_date).toISOString().slice(0, 16) : ''
+    )
+    setEditAllowLate(assignment.allow_late_submission)
+    setEditOpen(true)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await updateAssignment.mutateAsync({
+        id: assignment.id,
+        input: {
+          title: editTitle,
+          description: editDescription,
+          max_points: editMaxPoints,
+          due_date: editDueDate || undefined,
+          allow_late_submission: editAllowLate,
+        },
+      })
+      setEditOpen(false)
+      toast.success('Assignment updated')
+    } catch {
+      toast.error('Failed to update assignment')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const result = await uploadFile(file)
+      await createAttachment.mutateAsync({
+        ref_type: 'assignment',
+        ref_id: assignment.id,
+        stored_path: result.path,
+        original_name: result.name,
+        mime_type: file.type,
+        size_bytes: file.size,
+      })
+      toast.success('File attached')
+    } catch {
+      toast.error('Failed to upload file')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDeleteAttachment = async (id: string) => {
+    try {
+      await deleteAttachment.mutateAsync(id)
+      toast.success('Attachment removed')
+    } catch {
+      toast.error('Failed to remove attachment')
+    }
+  }
+
+  const dueLabel = assignment.due_date
+    ? new Date(assignment.due_date).toLocaleDateString()
+    : null
+
+  return (
+    <>
+      <div ref={setNodeRef} style={style} className="flex items-center gap-2 rounded-md border border-dashed bg-amber-50/50 px-3 py-2">
+        <button {...attributes} {...listeners} className="cursor-grab text-ink-subtle hover:text-ink-muted">
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <ClipboardList className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+        <span className="flex-1 text-sm truncate">{assignment.title}</span>
+        <span className="text-xs text-ink-muted">{assignment.max_points} pts</span>
+        {dueLabel && (
+          <span className="text-xs text-ink-subtle">Due {dueLabel}</span>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2"
+          onClick={handleEdit}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+        <ConfirmDialog
+          trigger={
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-destructive hover:text-destructive"
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          }
+          title="Delete assignment?"
+          description="All submissions for this assignment will also be deleted."
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          destructive
+        />
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Assignment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Title</Label>
+              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Statement / Description</Label>
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={5}
+                placeholder="Assignment instructions…"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Max Points</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={editMaxPoints}
+                  onChange={(e) => setEditMaxPoints(Number(e.target.value))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Due Date</Label>
+                <Input
+                  type="datetime-local"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="allow-late"
+                type="checkbox"
+                checked={editAllowLate}
+                onChange={(e) => setEditAllowLate(e.target.checked)}
+                className="h-4 w-4 accent-accent-600"
+              />
+              <Label htmlFor="allow-late" className="font-normal cursor-pointer">
+                Allow late submission
+              </Label>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Attachments</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 h-7 text-xs"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Upload className="h-3 w-3" />
+                  {uploading ? 'Uploading…' : 'Upload File'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+              </div>
+              {attachments.length === 0 ? (
+                <p className="text-xs text-ink-muted">No attachments yet.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {attachments.map((a) => (
+                    <li key={a.id} className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm">
+                      <span className="flex-1 truncate">{a.original_name}</span>
+                      <button
+                        onClick={() => handleDeleteAttachment(a.id)}
+                        className="text-ink-muted hover:text-destructive"
+                        title="Remove"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving || !editTitle}>
+              {saving ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}

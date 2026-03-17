@@ -1,0 +1,72 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+import { loginSchema, LoginFormData } from '@/lib/validators/auth.schema'
+import { login, superAdminLogin } from '@/lib/api/auth'
+import { useAuthStore } from '@/lib/stores/auth.store'
+import { getRoleBasePath } from '@/lib/utils/role-guard'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+interface LoginFormProps {
+  orgSlug: string
+  returnTo?: string
+  isSuperAdmin?: boolean
+}
+
+export function LoginForm({ orgSlug, returnTo, isSuperAdmin }: LoginFormProps) {
+  const router = useRouter()
+  const setSession = useAuthStore((s) => s.setSession)
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const result = isSuperAdmin
+        ? await superAdminLogin({ email: data.email, password: data.password })
+        : await login(orgSlug, { email: data.email, password: data.password })
+      setSession({
+        token: result.token,
+        user: result.user,
+        role: result.role,
+        orgSlug: isSuperAdmin ? '' : orgSlug,
+        expiresAt: result.expiresAt,
+      })
+      if (isSuperAdmin) {
+        router.push('/super-admin/dashboard')
+      } else if (returnTo) {
+        router.push(returnTo)
+      } else {
+        const basePath = getRoleBasePath(result.role)
+        router.push(`/${orgSlug}/${basePath}`)
+      }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } }
+      toast.error(e?.response?.data?.error?.message ?? 'Login failed. Check your credentials.')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" type="email" placeholder="you@example.com" {...register('email')} />
+        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input id="password" type="password" {...register('password')} />
+        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+      </div>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? 'Signing in...' : 'Sign in'}
+      </Button>
+    </form>
+  )
+}

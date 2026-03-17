@@ -1,0 +1,331 @@
+package routes
+
+import (
+	"github.com/ailms/backend/internal/delivery/http/handlers"
+	"github.com/ailms/backend/internal/delivery/http/middleware"
+	"github.com/ailms/backend/internal/domain/entities"
+	"github.com/ailms/backend/internal/domain/repositories"
+	"github.com/ailms/backend/pkg/logger"
+	"github.com/gin-gonic/gin"
+)
+
+type Dependencies struct {
+	AuthHandler              *handlers.AuthHandler
+	CourseHandler            *handlers.CourseHandler
+	CourseTeacherHandler     *handlers.CourseTeacherHandler
+	MemberHandler            *handlers.MemberHandler
+	ModuleHandler            *handlers.ModuleHandler
+	LessonHandler            *handlers.LessonHandler
+	AIHandler                *handlers.AIHandler
+	ProgressHandler          *handlers.ProgressHandler
+	UserHandler              *handlers.UserHandler
+	SuperAdminHandler        *handlers.SuperAdminHandler
+	AssignmentHandler        *handlers.AssignmentHandler
+	QuizAttemptHandler       *handlers.QuizAttemptHandler
+	QuizHandler              *handlers.QuizHandler
+	FileAttachmentHandler    *handlers.FileAttachmentHandler
+	GradeHandler             *handlers.GradeHandler
+	UploadHandler            *handlers.UploadHandler
+	AnnouncementHandler      *handlers.AnnouncementHandler
+	GroupHandler             *handlers.GroupHandler
+	ExamHandler              *handlers.ExamHandler
+	OrgRepo                  repositories.OrganizationRepository
+	JWTSecret                string
+	Logger                   *logger.Logger
+	UploadDir                string
+}
+
+func NewRouter(deps Dependencies) *gin.Engine {
+	r := gin.New()
+	r.Use(
+		middleware.CORS(),
+		middleware.RequestLogger(deps.Logger),
+		middleware.ErrorHandler(),
+		middleware.RateLimiter(100),
+	)
+
+	api := r.Group("/api/v1")
+
+	// Super admin public login — no tenant middleware
+	api.POST("/super-admin/auth/login", deps.SuperAdminHandler.Login)
+
+	// Super admin protected routes — Auth + RequireRole only, no Tenant middleware
+	sa := api.Group("/super-admin")
+	sa.Use(middleware.Auth(deps.JWTSecret), middleware.RequireRole(entities.RoleSuperAdmin))
+	sa.GET("/stats", deps.SuperAdminHandler.GetStats)
+	sa.GET("/orgs", deps.SuperAdminHandler.ListOrgs)
+	sa.DELETE("/orgs/:id", deps.SuperAdminHandler.DeleteOrg)
+	sa.GET("/users", deps.SuperAdminHandler.ListUsers)
+	sa.POST("/orgs/invite-admin", deps.SuperAdminHandler.InviteOrgAdmin)
+
+	// Public routes
+	auth := api.Group("/auth")
+	auth.POST("/register", deps.AuthHandler.Register)
+	auth.POST("/login", deps.AuthHandler.Login)
+
+	// Protected routes
+	protected := api.Group("/")
+	protected.Use(
+		middleware.Auth(deps.JWTSecret),
+		middleware.Tenant(deps.OrgRepo),
+	)
+
+	// Courses
+	courses := protected.Group("/courses")
+	courses.GET("", deps.CourseHandler.List)
+	courses.GET("/:id", deps.CourseHandler.Get)
+	courses.POST("",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.CourseHandler.Create,
+	)
+	courses.PUT("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.CourseHandler.Update,
+	)
+	courses.DELETE("/:id",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.CourseHandler.Delete,
+	)
+	courses.POST("/:id/publish",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.CourseHandler.Publish,
+	)
+
+	// Course teachers
+	courses.GET("/:id/teachers", deps.CourseTeacherHandler.List)
+	courses.POST("/:id/teachers",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.CourseTeacherHandler.Assign,
+	)
+	courses.DELETE("/:id/teachers/:teacherID",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.CourseTeacherHandler.Remove,
+	)
+
+	// Members (admin only)
+	members := protected.Group("/members")
+	members.Use(middleware.RequireRole(entities.RoleAdmin))
+	members.GET("", deps.MemberHandler.List)
+	members.POST("/invite", deps.MemberHandler.Invite)
+	members.POST("/import", deps.MemberHandler.BulkImport)
+	members.DELETE("/:id", deps.MemberHandler.Remove)
+	members.PUT("/:id/role", deps.MemberHandler.UpdateRole)
+
+	// Modules (inline in courses group — shares :id wildcard for course ID)
+	courses.GET("/:id/modules", deps.ModuleHandler.List)
+	courses.POST("/:id/modules",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ModuleHandler.Create,
+	)
+	courses.GET("/:id/modules/:moduleID", deps.ModuleHandler.Get)
+	courses.PUT("/:id/modules/:moduleID",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ModuleHandler.Update,
+	)
+	courses.DELETE("/:id/modules/:moduleID",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.ModuleHandler.Delete,
+	)
+
+	// Lessons (nested under modules — separate tree, no wildcard conflict)
+	lessons := protected.Group("/modules/:moduleID/lessons")
+	lessons.GET("", deps.LessonHandler.List)
+	lessons.POST("",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.LessonHandler.Create,
+	)
+	lessons.GET("/:lessonID", deps.LessonHandler.Get)
+	lessons.PUT("/:lessonID",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.LessonHandler.Update,
+	)
+	lessons.DELETE("/:lessonID",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.LessonHandler.Delete,
+	)
+
+	// Progress
+	progress := protected.Group("/progress")
+	progress.GET("", deps.ProgressHandler.GetProgress)
+	progress.GET("/insights", deps.ProgressHandler.GetInsights)
+	progress.POST("/lessons/:lessonID/complete", deps.ProgressHandler.Complete)
+
+	// AI
+	ai := protected.Group("/ai")
+	ai.Use(middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin))
+	ai.POST("/summarize", deps.AIHandler.SummarizeLesson)
+	ai.POST("/generate-quiz", deps.AIHandler.GenerateQuiz)
+
+	// User profile
+	protected.GET("/me", deps.UserHandler.GetMe)
+	protected.PUT("/me", deps.UserHandler.UpdateMe)
+
+	// Upload
+	protected.POST("/upload",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.UploadHandler.Upload,
+	)
+
+	// Assignments (inline in courses group — same :id wildcard for course ID)
+	courses.GET("/:id/modules/:moduleID/assignments", deps.AssignmentHandler.ListByModule)
+	courses.POST("/:id/modules/:moduleID/assignments",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.AssignmentHandler.Create,
+	)
+
+	assignmentsStandalone := protected.Group("/assignments")
+	assignmentsStandalone.GET("/:id", deps.AssignmentHandler.Get)
+	assignmentsStandalone.PUT("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.AssignmentHandler.Update,
+	)
+	assignmentsStandalone.DELETE("/:id",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.AssignmentHandler.Delete,
+	)
+	assignmentsStandalone.POST("/:id/submit", deps.AssignmentHandler.Submit)
+	assignmentsStandalone.GET("/:id/my-submission", deps.AssignmentHandler.GetMySubmission)
+	assignmentsStandalone.DELETE("/:id/my-submission", deps.AssignmentHandler.DeleteMySubmission)
+	assignmentsStandalone.GET("/:id/submissions",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.AssignmentHandler.ListSubmissions,
+	)
+
+	// Submissions grading
+	submissions := protected.Group("/submissions")
+	submissions.PUT("/:id/grade",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.AssignmentHandler.GradeSubmission,
+	)
+
+	// Quiz attempts + teacher CRUD
+	quizzes := protected.Group("/quizzes")
+	quizzes.POST("/:id/attempt", deps.QuizAttemptHandler.SubmitAttempt)
+	quizzes.GET("/:id/my-attempt", deps.QuizAttemptHandler.GetMyAttempt)
+	quizzes.PUT("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.QuizHandler.Update,
+	)
+	quizzes.DELETE("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.QuizHandler.Delete,
+	)
+
+	// Quiz by lesson (standalone lesson routes)
+	lessonRoutes := protected.Group("/lessons")
+	lessonRoutes.POST("/:lessonID/quiz",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.QuizHandler.Create,
+	)
+	lessonRoutes.GET("/:lessonID/quiz", deps.QuizHandler.GetByLesson)
+
+	// File attachments
+	attachments := protected.Group("/attachments")
+	attachments.GET("", deps.FileAttachmentHandler.ListByRef)
+	attachments.POST("",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.FileAttachmentHandler.Create,
+	)
+	attachments.DELETE("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.FileAttachmentHandler.Delete,
+	)
+
+	// Grades
+	courses.GET("/:id/my-grades", deps.GradeHandler.GetMyGrades)
+	courses.GET("/:id/deadlines", deps.GradeHandler.GetUpcomingDeadlines)
+
+	// Announcements
+	courses.GET("/:id/announcements", deps.AnnouncementHandler.List)
+	courses.POST("/:id/announcements",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.AnnouncementHandler.Create,
+	)
+	courses.DELETE("/:id/announcements/:aID",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.AnnouncementHandler.Delete,
+	)
+
+	// Groups
+	courses.GET("/:id/groups", deps.GroupHandler.List)
+	courses.POST("/:id/groups",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.Create,
+	)
+	courses.GET("/:id/groups/:groupID", deps.GroupHandler.Get)
+	courses.PUT("/:id/groups/:groupID",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.Update,
+	)
+	courses.DELETE("/:id/groups/:groupID",
+		middleware.RequireRole(entities.RoleAdmin),
+		deps.GroupHandler.Delete,
+	)
+	courses.GET("/:id/groups/:groupID/members",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.ListMembers,
+	)
+	courses.POST("/:id/groups/:groupID/members",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.AddMember,
+	)
+	courses.DELETE("/:id/groups/:groupID/members/:studentID",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.RemoveMember,
+	)
+	courses.GET("/:id/groups/:groupID/schedules",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.ListSchedules,
+	)
+	courses.POST("/:id/groups/:groupID/schedules",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.AddSchedule,
+	)
+	courses.DELETE("/:id/groups/:groupID/schedules/:schedID",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.GroupHandler.DeleteSchedule,
+	)
+	courses.GET("/:id/my-group", deps.GroupHandler.GetMyGroup)
+
+	// Exams (course-level)
+	courses.GET("/:id/exams", deps.ExamHandler.List)
+	courses.POST("/:id/exams",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ExamHandler.Create,
+	)
+
+	exams := protected.Group("/exams")
+	exams.GET("/:id", deps.ExamHandler.Get)
+	exams.PUT("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ExamHandler.Update,
+	)
+	exams.DELETE("/:id",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ExamHandler.Delete,
+	)
+	exams.POST("/:id/start", deps.ExamHandler.StartAttempt)
+	exams.GET("/:id/my-attempts", deps.ExamHandler.MyAttempts)
+	exams.GET("/:id/attempts",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ExamHandler.ListAttempts,
+	)
+	exams.POST("/:id/grant-attempt",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ExamHandler.GrantExtra,
+	)
+
+	examAttempts := protected.Group("/exam-attempts")
+	examAttempts.POST("/:id/submit", deps.ExamHandler.SubmitAttempt)
+	examAttempts.PUT("/:id/grade",
+		middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin),
+		deps.ExamHandler.GradeFile,
+	)
+
+	// Static file serving for uploads
+	if deps.UploadDir != "" {
+		r.Static("/uploads", deps.UploadDir)
+	}
+
+	return r
+}

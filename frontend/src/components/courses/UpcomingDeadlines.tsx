@@ -1,0 +1,58 @@
+'use client'
+
+import { useUpcomingDeadlines } from '@/lib/queries/grades.queries'
+import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils/cn'
+import { CheckCircle2, Clock } from 'lucide-react'
+
+interface UpcomingDeadlinesProps {
+  courseId: string
+}
+
+export function UpcomingDeadlines({ courseId }: UpcomingDeadlinesProps) {
+  const { data, isLoading } = useUpcomingDeadlines(courseId)
+
+  if (isLoading) {
+    return <div className="space-y-2">{[1, 2].map(i => <Skeleton key={i} className="h-12 rounded-lg" />)}</div>
+  }
+
+  if (!data || data.length === 0) {
+    return <p className="text-sm text-ink-muted py-4">No upcoming deadlines.</p>
+  }
+
+  const sorted = [...data].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+
+  return (
+    <div className="divide-y divide-border rounded-lg border">
+      {sorted.map((item) => {
+        const due = new Date(item.due_date)
+        const daysLeft = Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        const urgency = daysLeft <= 2 ? 'text-red-600 bg-red-50 border-red-200' : daysLeft <= 7 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-ink-muted bg-surface-50 border-border'
+
+        return (
+          <div key={item.item_id} className="flex items-center gap-3 px-4 py-3">
+            {item.submitted ? (
+              <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+            ) : (
+              <Clock className={cn('h-4 w-4 shrink-0', daysLeft <= 2 ? 'text-red-500' : 'text-amber-500')} />
+            )}
+            <span className="flex-1 text-sm">{item.title}</span>
+            <span className={cn(
+              'text-xs px-2 py-0.5 rounded capitalize',
+              item.item_type === 'assignment' ? 'text-amber-700 bg-amber-50' : 'text-purple-700 bg-purple-50'
+            )}>
+              {item.item_type}
+            </span>
+            {item.submitted ? (
+              <span className="text-xs text-green-600">Submitted</span>
+            ) : (
+              <span className={cn('text-xs px-2 py-0.5 rounded border', urgency)}>
+                {daysLeft <= 0 ? 'Due today' : `${daysLeft}d left`}
+              </span>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}

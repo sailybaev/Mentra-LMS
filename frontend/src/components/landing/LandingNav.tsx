@@ -2,69 +2,70 @@
 
 import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 
 export function LandingNav() {
   const { scrollY } = useScroll()
-  const borderOpacity = useTransform(scrollY, [0, 80], [0, 1])
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null)
-
-  // const links = [
-  //   { href: '#features', label: 'Features' },
-  //   { href: '#pricing', label: 'Pricing' },
-  // ]
+  const bgOpacity = useTransform(scrollY, [0, 60], [0, 1])
+  const borderOpacity = useTransform(scrollY, [0, 60], [0, 1])
 
   return (
     <motion.header
       className="fixed top-0 left-0 right-0 z-50"
-      initial={{ y: -20, opacity: 0 }}
+      initial={{ y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="absolute inset-0 bg-white/90 backdrop-blur-xl" />
       <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px bg-zinc-200"
+        className="absolute inset-0"
+        style={{
+          opacity: bgOpacity,
+          backgroundColor: 'rgba(250,250,248,0.92)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        }}
+      />
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-px bg-[#E8E7E3]"
         style={{ opacity: borderOpacity }}
       />
-      <div className="relative mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+
+      <div className="relative mx-auto flex h-[60px] max-w-[1120px] items-center justify-between px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-950 text-white text-xs font-bold transition-opacity duration-200 group-hover:opacity-80">
-            M
-          </div>
-          <span className="font-semibold text-zinc-950 tracking-tight">Mentra</span>
+          <motion.div
+            className="h-7 w-7 rounded-[8px] bg-[#111110] flex items-center justify-center shrink-0"
+            whileHover={{ scale: 1.1, rotate: -6 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 14 }}
+          >
+            <span className="text-white text-[11px] font-bold tracking-tight">M</span>
+          </motion.div>
+          <span className="text-[15px] font-semibold text-[#111110] tracking-[-0.02em] transition-opacity duration-150 group-hover:opacity-70">
+            Mentra
+          </span>
         </Link>
-
-        {/* Nav links */}
-        <nav className="hidden sm:flex items-center gap-0.5">
-          {/* {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              onMouseEnter={() => setHoveredLink(href)}
-              onMouseLeave={() => setHoveredLink(null)}
-              className="relative px-3.5 py-1.5 text-sm text-zinc-500 transition-colors hover:text-zinc-900 rounded-md"
-            >
-              {hoveredLink === href && (
-                <motion.span
-                  layoutId="nav-pill"
-                  className="absolute inset-0 rounded-md bg-zinc-100"
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                />
-              )}
-              <span className="relative">{label}</span>
-            </Link>
-          ))} */}
-        </nav>
 
         {/* CTAs */}
         <div className="flex items-center gap-2">
-          <Link
-            href="/register"
-            className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 transition-colors duration-200"
-          >
-            Get started
-          </Link>
+          <motion.div whileTap={{ scale: 0.96 }}>
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex px-4 py-1.5 text-[14px] font-medium text-[#6B6B67] hover:text-[#111110] transition-colors duration-150 rounded-lg hover:bg-[#111110]/[0.04]"
+            >
+              Sign in
+            </Link>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
+            <Link
+              href="/register"
+              className="group/cta relative overflow-hidden inline-flex items-center gap-1.5 rounded-[10px] bg-[#111110] px-4 py-[7px] text-[14px] font-medium text-white hover:bg-[#2A2A28] transition-colors duration-150"
+            >
+              {/* Shimmer */}
+              <span className="pointer-events-none absolute inset-0 -translate-x-full -skew-x-12 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent group-hover/cta:translate-x-[250%] transition-transform duration-600 ease-in-out" />
+              Get started
+              <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+            </Link>
+          </motion.div>
         </div>
       </div>
     </motion.header>

@@ -40,38 +40,37 @@ function FeatureCard({
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`group relative overflow-hidden rounded-2xl border border-zinc-100 bg-white p-7 flex flex-col gap-5 cursor-default transition-shadow duration-300 hover:shadow-xl hover:shadow-zinc-100 ${spanClass}`}
+      className={`group relative overflow-hidden rounded-2xl border border-[#E8E7E3] bg-white p-7 flex flex-col gap-5 cursor-default transition-shadow duration-300 hover:shadow-lg hover:shadow-black/[0.04] ${spanClass}`}
     >
-      {/* Cursor spotlight */}
       <div
         className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300"
         style={{
           opacity: hovered ? 1 : 0,
-          background: `radial-gradient(260px circle at ${cursor.x}px ${cursor.y}px, rgba(0,0,0,0.028), transparent 70%)`,
+          background: `radial-gradient(280px circle at ${cursor.x}px ${cursor.y}px, rgba(0,0,0,0.025), transparent 70%)`,
         }}
       />
-      {/* Top accent line */}
       <div
-        className="pointer-events-none absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-900 to-transparent transition-opacity duration-300"
-        style={{ opacity: hovered ? 0.6 : 0 }}
+        className="pointer-events-none absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#111110] to-transparent transition-opacity duration-300"
+        style={{ opacity: hovered ? 0.5 : 0 }}
       />
 
       <div className="relative z-10 flex flex-col gap-4 flex-1">
-        {/* Icon + tag */}
         <div className="flex items-center justify-between">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 transition-transform duration-200 group-hover:scale-105">
+          <motion.div
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#111110]"
+            whileHover={{ scale: 1.12, rotate: -8 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+          >
             <Icon className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-300">{tag}</span>
+          </motion.div>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C6C1]">{tag}</span>
         </div>
 
-        {/* Text */}
         <div>
-          <h3 className="font-bold text-zinc-900 tracking-tight text-[15px]">{title}</h3>
-          <p className="mt-1.5 text-sm text-zinc-500 leading-relaxed">{description}</p>
+          <h3 className="font-bold text-[#111110] tracking-tight text-[15px]">{title}</h3>
+          <p className="mt-1.5 text-[13px] text-[#6B6B67] leading-relaxed">{description}</p>
         </div>
 
-        {/* Visual content */}
         {children && <div className="flex-1 flex flex-col justify-end">{children}</div>}
       </div>
     </motion.div>
@@ -85,8 +84,8 @@ function QuizPreview() {
     { label: 'A loss function', correct: false },
   ]
   return (
-    <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 space-y-2">
-      <p className="text-xs font-semibold text-zinc-700 mb-3">What is gradient descent?</p>
+    <div className="rounded-xl border border-[#F0EFEB] bg-[#FAFAF8] p-4 space-y-2">
+      <p className="text-xs font-semibold text-[#111110] mb-3">What is gradient descent?</p>
       {options.map((opt, i) => (
         <motion.div
           key={opt.label}
@@ -97,15 +96,15 @@ function QuizPreview() {
           className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium ${
             opt.correct
               ? 'bg-emerald-600 text-white'
-              : 'bg-white text-zinc-400 border border-zinc-100'
+              : 'bg-white text-[#9B9B97] border border-[#E8E7E3]'
           }`}
         >
-          <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${opt.correct ? 'bg-white/60' : 'bg-zinc-200'}`} />
+          <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${opt.correct ? 'bg-white/60' : 'bg-[#E8E7E3]'}`} />
           {opt.label}
         </motion.div>
       ))}
       <div className="flex items-center justify-between pt-1">
-        <span className="text-[10px] text-zinc-400">Generated in 2.1s</span>
+        <span className="text-[10px] text-[#9B9B97]">Generated in 2.1s</span>
         <span className="text-[10px] font-semibold text-emerald-600">94% avg score ↑</span>
       </div>
     </div>
@@ -114,7 +113,7 @@ function QuizPreview() {
 
 function AnalyticsPreview() {
   const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7']
-  const bars =  [38, 52, 44, 71, 58, 83, 76]
+  const bars = [38, 52, 44, 71, 58, 83, 76]
   return (
     <div className="space-y-3">
       <div className="flex items-end justify-between gap-1.5 h-20">
@@ -122,24 +121,24 @@ function AnalyticsPreview() {
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
             <motion.div
               className="w-full rounded-sm bg-emerald-500"
-              style={{ height: `${h}%`, opacity: 0.3 + i * 0.1 }}
+              style={{ height: `${h}%`, opacity: 0.25 + i * 0.1 }}
               initial={{ scaleY: 0, originY: '100%' }}
               whileInView={{ scaleY: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 + i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             />
-            <span className="text-[9px] text-zinc-300">{weeks[i]}</span>
+            <span className="text-[9px] text-[#C8C6C1]">{weeks[i]}</span>
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between border-t border-zinc-100 pt-3">
+      <div className="flex items-center justify-between border-t border-[#F0EFEB] pt-3">
         <div>
           <p className="text-xs font-semibold text-emerald-700">76% completion</p>
           <p className="text-[11px] text-emerald-600 font-medium">↑ 12% vs last month</p>
         </div>
         <div className="text-right">
-          <p className="text-xs font-semibold text-zinc-900">231 active</p>
-          <p className="text-[11px] text-zinc-400">students this week</p>
+          <p className="text-xs font-semibold text-[#111110]">231 active</p>
+          <p className="text-[11px] text-[#9B9B97]">students this week</p>
         </div>
       </div>
     </div>
@@ -160,7 +159,7 @@ function StudentJourneyPreview() {
           <div className="flex flex-col items-center w-full">
             <div className="relative w-full flex items-center">
               <motion.div
-                className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mx-auto z-10 shadow-sm shadow-emerald-600/30"
+                className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mx-auto z-10 shadow-sm shadow-emerald-600/20"
                 initial={{ scale: 0 }}
                 whileInView={{ scale: 1 }}
                 viewport={{ once: true }}
@@ -180,8 +179,8 @@ function StudentJourneyPreview() {
               )}
             </div>
             <div className="mt-2.5 text-center px-1">
-              <p className="text-xs font-semibold text-zinc-800">{step.label}</p>
-              <p className="text-[10px] text-zinc-400 mt-0.5">{step.sub}</p>
+              <p className="text-xs font-semibold text-[#111110]">{step.label}</p>
+              <p className="text-[10px] text-[#9B9B97] mt-0.5">{step.sub}</p>
             </div>
           </div>
         </div>
@@ -201,19 +200,18 @@ function DragDropPreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 + i * 0.08 }}
-          className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-2.5 cursor-grab active:cursor-grabbing"
+          className="flex items-center gap-3 rounded-xl border border-[#E8E7E3] bg-[#FAFAF8] px-3 py-2.5 cursor-grab"
         >
-          {/* Drag handle dots */}
           <div className="flex flex-col gap-[3px] shrink-0">
             {[0, 1].map((r) => (
               <div key={r} className="flex gap-[3px]">
-                <div className="h-[3px] w-[3px] rounded-full bg-zinc-300" />
-                <div className="h-[3px] w-[3px] rounded-full bg-zinc-300" />
+                <div className="h-[3px] w-[3px] rounded-full bg-[#C8C6C1]" />
+                <div className="h-[3px] w-[3px] rounded-full bg-[#C8C6C1]" />
               </div>
             ))}
           </div>
-          <span className="text-xs font-medium text-zinc-600">{mod}</span>
-          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-zinc-200" />
+          <span className="text-xs font-medium text-[#6B6B67]">{mod}</span>
+          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-[#E8E7E3]" />
         </motion.div>
       ))}
     </div>
@@ -222,8 +220,8 @@ function DragDropPreview() {
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-28 px-6">
-      <div className="mx-auto max-w-6xl">
+    <section id="features" className="py-28 bg-[#FAFAF8]">
+      <div className="mx-auto max-w-[1120px] px-8">
         <motion.div
           className="mb-14"
           initial={{ opacity: 0, y: 14 }}
@@ -231,16 +229,22 @@ export function FeaturesSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">Platform</p>
-          <h2 className="text-4xl font-black tracking-[-0.03em] text-zinc-950 sm:text-5xl max-w-lg">
-            Built for how universities actually work.
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#C8C6C1]">Platform</p>
+          <h2 className="text-[#111110] tracking-[-0.04em] leading-[1.05]" style={{ fontSize: 'clamp(32px, 4vw, 52px)' }}>
+            Built for how universities{' '}
+            <span
+              style={{
+                fontFamily: 'var(--font-display), Georgia, serif',
+                fontStyle: 'italic',
+                fontWeight: 400,
+              }}
+            >
+              actually work.
+            </span>
           </h2>
         </motion.div>
 
-        {/* Bento grid — 3 cols on lg */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-auto">
-
-          {/* Row 1: Quiz (2 cols) + Analytics (1 col) */}
           <FeatureCard
             index={0}
             icon={Sparkles}
@@ -262,7 +266,6 @@ export function FeaturesSection() {
             <AnalyticsPreview />
           </FeatureCard>
 
-          {/* Row 2: Drag-drop (1 col) + Student journey (2 cols) */}
           <FeatureCard
             index={2}
             icon={BookOpen}
@@ -283,7 +286,6 @@ export function FeaturesSection() {
           >
             <StudentJourneyPreview />
           </FeatureCard>
-
         </div>
       </div>
     </section>

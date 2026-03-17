@@ -22,7 +22,7 @@ export default function StudentDashboard() {
     () =>
       [...progress]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .find((p) => !p.completed),
+        .find((p) => !p.completed_at),
     [progress]
   )
 

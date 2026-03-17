@@ -9,7 +9,7 @@ import { formatDate } from '@/lib/utils/format'
 export default function StudentProgressPage() {
   const { data: progress = [], isLoading } = useProgress()
 
-  const completed = progress.filter((p) => p.completed)
+  const completed = progress.filter((p) => !!p.completed_at)
   const withScore = completed.filter((p) => p.score != null)
   const avgScore = withScore.length
     ? Math.round(withScore.reduce((s, p) => s + (p.score ?? 0), 0) / withScore.length)
@@ -63,12 +63,12 @@ export default function StudentProgressPage() {
           <div className="divide-y divide-[#e8e8e6] border border-[#e8e8e6] rounded-lg overflow-hidden">
             {recent.map((p) => (
               <div key={p.id} className="flex items-center gap-3 px-3.5 py-2.5 hover:bg-[#f7f7f5] transition-colors">
-                {p.completed
+                {p.completed_at
                   ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#059669]" />
                   : <Circle className="h-3.5 w-3.5 shrink-0 text-[#c9c9c9]" />
                 }
                 <span className="flex-1 text-sm text-[#3b3b3b]">
-                  {p.completed ? 'Completed' : 'Started'} a lesson
+                  {p.completed_at ? 'Completed' : 'Started'} a lesson
                 </span>
                 {p.score != null && (
                   <div className="flex items-center gap-2 shrink-0">

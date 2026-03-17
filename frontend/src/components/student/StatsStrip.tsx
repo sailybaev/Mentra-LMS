@@ -9,7 +9,7 @@ interface StatsStripProps {
 }
 
 export function StatsStrip({ progress, courses }: StatsStripProps) {
-  const completed = progress.filter((p) => p.completed)
+  const completed = progress.filter((p) => !!p.completed_at)
   const withScore = completed.filter((p) => p.score != null)
   const avgScore = withScore.length
     ? Math.round(withScore.reduce((s, p) => s + (p.score ?? 0), 0) / withScore.length)

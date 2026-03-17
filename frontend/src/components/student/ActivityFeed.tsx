@@ -23,12 +23,12 @@ export function ActivityFeed({ progress }: ActivityFeedProps) {
         <div className="divide-y divide-[#e8e8e6] border border-[#e8e8e6] rounded-lg overflow-hidden">
           {recent.map((p) => (
             <div key={p.id} className="flex items-center gap-3 px-3.5 py-2.5">
-              {p.completed
+              {p.completed_at
                 ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#059669]" />
                 : <Circle className="h-3.5 w-3.5 shrink-0 text-[#c9c9c9]" />
               }
               <span className="flex-1 text-sm text-[#3b3b3b] truncate">
-                {p.completed ? 'Completed lesson' : 'Started lesson'}
+                {p.completed_at ? 'Completed lesson' : 'Started lesson'}
               </span>
               <div className="flex items-center gap-2 shrink-0">
                 {p.score != null && (

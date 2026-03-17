@@ -43,7 +43,7 @@ export function MiniCalendar({ progress }: MiniCalendarProps) {
     const d = new Date(p.created_at)
     return d.getMonth() === month && d.getFullYear() === year
   })
-  const completedThisMonth = thisMonthActivity.filter((p) => p.completed).length
+  const completedThisMonth = thisMonthActivity.filter((p) => !!p.completed_at).length
 
   return (
     <div className="flex flex-col">

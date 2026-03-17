@@ -18,27 +18,28 @@ const links = {
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-zinc-100 bg-white px-6 pt-16 pb-10">
-      <div className="mx-auto max-w-6xl">
+    <footer className="border-t border-[#E8E7E3] bg-white px-8 pt-16 pb-10">
+      <div className="mx-auto max-w-[1120px]">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 mb-12">
-          {/* Brand */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-white text-xs font-bold">M</div>
-              <span className="font-semibold text-zinc-900">Mentra</span>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="h-7 w-7 rounded-[8px] bg-[#111110] flex items-center justify-center shrink-0">
+                <span className="text-white text-[11px] font-bold tracking-tight">M</span>
+              </div>
+              <span className="text-[15px] font-semibold text-[#111110] tracking-[-0.02em]">Mentra</span>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed max-w-[160px]">
+            <p className="text-[12px] text-[#9B9B97] leading-relaxed max-w-[160px]">
               The AI-powered LMS for modern institutions.
             </p>
           </div>
-          {/* Links */}
+
           {Object.entries(links).map(([group, items]) => (
             <div key={group}>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-300">{group}</p>
+              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#C8C6C1]">{group}</p>
               <ul className="space-y-2.5">
                 {items.map(({ label, href }) => (
                   <li key={label}>
-                    <Link href={href} className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+                    <Link href={href} className="text-[13px] text-[#6B6B67] hover:text-[#111110] transition-colors">
                       {label}
                     </Link>
                   </li>
@@ -47,8 +48,9 @@ export function LandingFooter() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-zinc-100 pt-6">
-          <p className="text-xs text-zinc-400">© {new Date().getFullYear()} Mentra. All rights reserved.</p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E8E7E3] pt-6">
+          <p className="text-[12px] text-[#9B9B97]">© {new Date().getFullYear()} Mentra. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { Check, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -47,8 +47,8 @@ export function PricingSection() {
   const [annual, setAnnual] = useState(false)
 
   return (
-    <section id="pricing" className="py-28 px-6 bg-zinc-50/50">
-      <div className="mx-auto max-w-5xl">
+    <section id="pricing" className="py-28 bg-white border-y border-[#E8E7E3]">
+      <div className="mx-auto max-w-[1120px] px-8">
         <motion.div
           className="mb-14 text-center"
           initial={{ opacity: 0, y: 16 }}
@@ -56,26 +56,35 @@ export function PricingSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">Pricing</p>
-          <h2 className="text-4xl font-black tracking-[-0.03em] text-zinc-950 sm:text-5xl">
-            Simple, transparent pricing
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#C8C6C1]">Pricing</p>
+          <h2 className="text-[#111110] tracking-[-0.04em] leading-[1.05]" style={{ fontSize: 'clamp(32px, 4vw, 52px)' }}>
+            Simple,{' '}
+            <span
+              style={{
+                fontFamily: 'var(--font-display), Georgia, serif',
+                fontStyle: 'italic',
+                fontWeight: 400,
+              }}
+            >
+              transparent
+            </span>{' '}
+            pricing.
           </h2>
-          <p className="mt-3 text-zinc-400">No surprises. Cancel or upgrade anytime.</p>
+          <p className="mt-3 text-[14px] text-[#9B9B97]">No surprises. Cancel or upgrade anytime.</p>
 
-          {/* Billing toggle */}
-          <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1">
+          <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-[#E8E7E3] bg-[#FAFAF8] p-1">
             <button
               onClick={() => setAnnual(false)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                !annual ? 'bg-emerald-600 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+              className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 ${
+                !annual ? 'bg-[#111110] text-white shadow-sm' : 'text-[#6B6B67] hover:text-[#111110]'
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setAnnual(true)}
-              className={`relative rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                annual ? 'bg-emerald-600 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+              className={`relative rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 ${
+                annual ? 'bg-[#111110] text-white shadow-sm' : 'text-[#6B6B67] hover:text-[#111110]'
               }`}
             >
               Annual
@@ -85,7 +94,7 @@ export function PricingSection() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute -right-1 -top-2.5 rounded-full bg-zinc-950 px-1.5 py-0.5 text-[9px] font-bold text-white"
+                    className="absolute -right-1 -top-2.5 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-bold text-white"
                   >
                     −20%
                   </motion.span>
@@ -106,20 +115,20 @@ export function PricingSection() {
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
               className={`relative rounded-2xl p-6 flex flex-col ${
                 tier.featured
-                  ? 'bg-zinc-950 shadow-2xl shadow-zinc-900/20'
-                  : 'border border-zinc-200 bg-white shadow-sm'
+                  ? 'bg-[#111110] shadow-2xl shadow-black/10'
+                  : 'border border-[#E8E7E3] bg-white'
               }`}
             >
               {tier.featured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-white px-3 py-0.5 text-[11px] font-semibold text-zinc-900 shadow-sm">
+                  <span className="rounded-full bg-white px-3 py-0.5 text-[11px] font-semibold text-[#111110] shadow-sm">
                     Most popular
                   </span>
                 </div>
               )}
 
               <div className="mb-6">
-                <p className={`text-sm font-semibold ${tier.featured ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                <p className={`text-[13px] font-semibold ${tier.featured ? 'text-[#9B9B97]' : 'text-[#6B6B67]'}`}>
                   {tier.name}
                 </p>
                 <div className="mt-2 flex items-baseline gap-1">
@@ -130,12 +139,12 @@ export function PricingSection() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
                       transition={{ duration: 0.18 }}
-                      className={`text-4xl font-black tracking-[-0.03em] ${tier.featured ? 'text-white' : 'text-zinc-950'}`}
+                      className={`text-4xl font-black tracking-[-0.04em] ${tier.featured ? 'text-white' : 'text-[#111110]'}`}
                     >
                       {annual ? tier.annualPrice : tier.monthlyPrice}
                     </motion.span>
                   </AnimatePresence>
-                  <span className={`text-sm ${tier.featured ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  <span className={`text-[13px] ${tier.featured ? 'text-[#6B6B67]' : 'text-[#9B9B97]'}`}>
                     / {annual && tier.annualBilling ? tier.annualBilling : tier.billing}
                   </span>
                 </div>
@@ -148,7 +157,7 @@ export function PricingSection() {
                     {tier.savings}
                   </motion.span>
                 )}
-                <p className={`mt-2 text-sm ${tier.featured ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                <p className={`mt-2 text-[13px] leading-relaxed ${tier.featured ? 'text-[#6B6B67]' : 'text-[#9B9B97]'}`}>
                   {tier.description}
                 </p>
               </div>
@@ -157,31 +166,35 @@ export function PricingSection() {
                 {tier.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-2.5">
                     <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
-                      tier.featured ? 'bg-white/10' : 'bg-zinc-100'
+                      tier.featured ? 'bg-white/10' : 'bg-[#F0EFEB]'
                     }`}>
-                      <Check className={`h-2.5 w-2.5 ${tier.featured ? 'text-white' : 'text-zinc-600'}`} />
+                      <Check className={`h-2.5 w-2.5 ${tier.featured ? 'text-white' : 'text-[#6B6B67]'}`} />
                     </div>
-                    <span className={`text-sm ${tier.featured ? 'text-zinc-300' : 'text-zinc-600'}`}>{feature}</span>
+                    <span className={`text-[13px] ${tier.featured ? 'text-[#C8C6C1]' : 'text-[#6B6B67]'}`}>{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link
-                href={tier.href}
-                className={`block w-full rounded-xl py-2.5 text-center text-sm font-semibold transition-colors duration-200 ${
-                  tier.featured
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-400'
-                    : 'border border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50'
-                }`}
-              >
-                {tier.cta}
-              </Link>
+              <motion.div whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.97 }}>
+                <Link
+                  href={tier.href}
+                  className={`group relative overflow-hidden flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[13px] font-semibold transition-colors duration-200 ${
+                    tier.featured
+                      ? 'bg-emerald-500 text-white hover:bg-emerald-400'
+                      : 'border border-[#E8E7E3] text-[#6B6B67] hover:border-[#C8C6C1] hover:text-[#111110] hover:bg-[#FAFAF8]'
+                  }`}
+                >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full -skew-x-12 bg-gradient-to-r from-transparent via-white/[0.12] to-transparent group-hover:translate-x-[250%] transition-transform duration-600 ease-in-out" />
+                  {tier.cta}
+                  <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                </Link>
+              </motion.div>
             </motion.div>
           ))}
         </div>
 
         <motion.p
-          className="mt-8 text-center text-sm text-zinc-400"
+          className="mt-8 text-center text-[13px] text-[#9B9B97]"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

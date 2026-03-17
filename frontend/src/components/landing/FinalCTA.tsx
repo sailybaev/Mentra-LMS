@@ -44,47 +44,88 @@ function MagneticButton({
 
 export function FinalCTA() {
   return (
-    <section className="relative overflow-hidden py-32 px-6 bg-zinc-950">
-      {/* Subtle texture */}
-      <div className="pointer-events-none absolute inset-0 dot-grid opacity-[0.04]" />
+    <section className="relative overflow-hidden py-32 bg-[#111110]">
+      {/* Dot grid texture */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }}
+      />
+      {/* Radial glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(5,150,105,0.08), transparent)',
+        }}
+      />
 
-      <div className="relative z-10 mx-auto max-w-3xl text-center">
+      <div className="relative z-10 mx-auto max-w-[1120px] px-8 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#4A4A47]">
             Get started today
           </p>
-          <h2 className="font-black tracking-[-0.04em] text-white" style={{ fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 0.95 }}>
+          <h2
+            className="text-white tracking-[-0.04em] leading-[0.95]"
+            style={{ fontSize: 'clamp(40px, 6vw, 72px)' }}
+          >
             Your university
             <br />
-            <span className="text-zinc-500">deserves better.</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-display), Georgia, serif',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                color: '#6B6B67',
+              }}
+            >
+              deserves better.
+            </span>
           </h2>
-          <p className="mx-auto mt-7 max-w-md text-zinc-400 leading-relaxed">
+          <p className="mx-auto mt-7 max-w-md text-[15px] text-[#6B6B67] leading-relaxed">
             Replace your legacy LMS with a platform your faculty will adopt, your students will engage with, and your leadership can report on.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <MagneticButton
-              href="/register"
-              className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-zinc-950 hover:bg-zinc-100 transition-colors duration-200"
-            >
-              Request a demo
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </MagneticButton>
-            <Link
-              href="/login"
-              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              Already have an account? Sign in →
-            </Link>
+            <div className="relative">
+              {/* Pulsing ring */}
+              <motion.div
+                className="absolute inset-0 rounded-[14px] border border-white/20"
+                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <motion.div
+                className="absolute inset-0 rounded-[14px] border border-white/10"
+                animate={{ scale: [1, 1.18, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+              />
+              <MagneticButton
+                href="/register"
+                className="group relative overflow-hidden inline-flex items-center gap-2 rounded-[12px] bg-white px-8 py-3.5 text-[14px] font-semibold text-[#111110] hover:bg-[#F0EFEB] transition-colors duration-200"
+              >
+                <span className="pointer-events-none absolute inset-0 -translate-x-full -skew-x-12 bg-gradient-to-r from-transparent via-black/[0.04] to-transparent group-hover:translate-x-[250%] transition-transform duration-700 ease-in-out" />
+                Request a demo
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </MagneticButton>
+            </div>
+            <motion.div whileHover={{ x: 3 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+              <Link
+                href="/login"
+                className="text-[14px] text-[#4A4A47] hover:text-white transition-colors"
+              >
+                Already have an account? Sign in →
+              </Link>
+            </motion.div>
           </div>
 
           <motion.div
-            className="mt-12 flex flex-wrap justify-center gap-8 text-xs text-zinc-600"
+            className="mt-12 flex flex-wrap justify-center gap-8 text-[12px] text-[#4A4A47]"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}

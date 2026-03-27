@@ -11,12 +11,6 @@ services:
     networks:
       - default
       - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mentra-lms.rule=Host(`lms.sailybaev.kz`)"
-      - "traefik.http.routers.mentra-lms.entrypoints=websecure"
-      - "traefik.http.routers.mentra-lms.tls.certresolver=letsencrypt"
-      - "traefik.http.services.mentra-lms.loadbalancer.server.port=80"
 
   app:
     build: ./backend

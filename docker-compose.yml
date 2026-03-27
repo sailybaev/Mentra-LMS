@@ -1,6 +1,8 @@
 services:
   nginx:
     image: nginx:alpine
+    ports:
+      - "127.0.0.1:8100:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./data/uploads:/data/uploads:ro
@@ -8,9 +10,6 @@ services:
       - app
       - frontend
     restart: unless-stopped
-    networks:
-      - default
-      - dokploy-network
 
   app:
     build: ./backend
@@ -72,6 +71,3 @@ volumes:
   pgdata:
   ollama_models:
 
-networks:
-  dokploy-network:
-    external: true

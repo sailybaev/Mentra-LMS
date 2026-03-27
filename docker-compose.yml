@@ -1,8 +1,6 @@
 services:
   nginx:
     image: nginx:alpine
-    ports:
-      - "127.0.0.1:8100:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./data/uploads:/data/uploads:ro
@@ -10,6 +8,14 @@ services:
       - app
       - frontend
     restart: unless-stopped
+    networks:
+      - dokploy-network
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mentra-lms.rule=Host(`lms.sailybaev.kz`)'
+      - 'traefik.http.routers.mentra-lms.entrypoints=websecure'
+      - 'traefik.http.routers.mentra-lms.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.mentra-lms.loadbalancer.server.port=80'
 
   app:
     build: ./backend
@@ -24,6 +30,8 @@ services:
       ollama:
         condition: service_started
     restart: unless-stopped
+    networks:
+      - dokploy-network
 
   frontend:
     build:
@@ -31,6 +39,8 @@ services:
       args:
         NEXT_PUBLIC_API_URL: https://lms.sailybaev.kz/api/v1
     restart: unless-stopped
+    networks:
+      - dokploy-network
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -42,18 +52,26 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lms"]
+      test: ['CMD-SHELL', 'pg_isready -U lms']
       interval: 5s
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    networks:
+      - dokploy-network
 
   ollama:
     image: ollama/ollama:latest
     volumes:
       - ollama_models:/root/.ollama
     restart: unless-stopped
+    networks:
+      - dokploy-network
 
 volumes:
   pgdata:
   ollama_models:
+
+networks:
+  dokploy-network:
+    external: true

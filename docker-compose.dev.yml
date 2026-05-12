@@ -1,0 +1,40 @@
+# Local development — only infrastructure services run in Docker.
+# The backend and frontend run on the host for hot-reload.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d        # start infra
+#   docker compose -f docker-compose.dev.yml exec postgres psql -U lms lms  # psql
+#
+# Then in separate terminals:
+#   cd backend  && go run ./cmd/server/main.go             # API on :8080
+#   cd backend  && go run ./cmd/seed/main.go               # seed DB (first time)
+#   cd frontend && npm run dev                             # Next.js on :3000
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: lms
+      POSTGRES_USER: lms
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U lms -d lms']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models_dev:/root/.ollama
+
+volumes:
+  pgdata_dev:
+  ollama_models_dev:

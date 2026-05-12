@@ -58,3 +58,44 @@ func (h *AIHandler) GenerateQuiz(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": quiz})
 }
+
+func (h *AIHandler) GetAssignmentFeedback(c *gin.Context) {
+	var req dto.AssignmentFeedbackRequest
+	if err := bindJSON(c, &req); err != nil {
+		c.Error(err)
+		return
+	}
+	submissionID, err := uuid.Parse(req.SubmissionID)
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid submission id"))
+		return
+	}
+	userID, _ := uuid.Parse(middleware.GetUserID(c))
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	resp, err := h.aiUC.GetAssignmentFeedback(c.Request.Context(), submissionID, userID, orgID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": resp})
+}
+
+func (h *AIHandler) GenerateFlashcards(c *gin.Context) {
+	var req dto.GenerateFlashcardsRequest
+	if err := bindJSON(c, &req); err != nil {
+		c.Error(err)
+		return
+	}
+	lessonID, err := uuid.Parse(req.LessonID)
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid lesson id"))
+		return
+	}
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	flashcards, err := h.aiUC.GenerateFlashcards(c.Request.Context(), lessonID, orgID, req.NumCards)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": flashcards})
+}

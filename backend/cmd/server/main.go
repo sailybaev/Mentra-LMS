@@ -96,7 +96,7 @@ func main() {
 	lessonUC := usecases.NewLessonUseCase(lessonRepo, moduleRepo)
 	quizUC := usecases.NewQuizUseCase(quizRepo, lessonRepo)
 	progressUC := usecases.NewProgressUseCase(progressRepo, lessonRepo, aiService, moduleRepo, quizRepo, quizAttemptRepo)
-	aiUC := usecases.NewAIUseCase(lessonRepo, quizRepo, aiService)
+	aiUC := usecases.NewAIUseCase(lessonRepo, quizRepo, assignmentRepo, aiService)
 	userUC := usecases.NewUserUseCase(userRepo)
 	superAdminUC := usecases.NewSuperAdminUseCase(userRepo, orgRepo, memberRepo)
 	assignmentUC := usecases.NewAssignmentUseCase(assignmentRepo, moduleRepo)

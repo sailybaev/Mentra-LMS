@@ -20,3 +20,16 @@ export function useAIInsights() {
     queryFn: () => aiApi.getAIInsights(),
   })
 }
+
+export function useAssignmentFeedback() {
+  return useMutation({
+    mutationFn: (submissionId: string) => aiApi.getAssignmentFeedback(submissionId),
+  })
+}
+
+export function useGenerateFlashcards() {
+  return useMutation({
+    mutationFn: ({ lessonId, numCards }: { lessonId: string; numCards: number }) =>
+      aiApi.generateFlashcards(lessonId, numCards),
+  })
+}

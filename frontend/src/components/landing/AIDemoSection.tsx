@@ -223,7 +223,7 @@ export function AIDemoSection() {
                       transition={{ delay: i * 0.1, duration: 0.4 }}
                       className="rounded-xl border border-white/[0.06] bg-zinc-800/60 p-4"
                     >
-                      <p className="text-sm font-medium text-white mb-3">{i + 1}. {q.text}</p>
+                      <p className="text-sm font-medium text-white mb-3">{i + 1}. {q.question}</p>
                       <div className="space-y-1.5">
                         {q.answers.map((a) => (
                           <div
@@ -235,7 +235,7 @@ export function AIDemoSection() {
                             }`}
                           >
                             <div className={`h-1.5 w-1.5 rounded-full ${a.is_correct ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-                            {a.text}
+                            {a.answer}
                             {a.is_correct && <span className="ml-auto text-emerald-500">✓ correct</span>}
                           </div>
                         ))}

@@ -37,7 +37,7 @@ export function QuizViewer({ questions, onComplete }: QuizViewerProps) {
     <div className="space-y-6">
       {questions.map((q, qi) => (
         <div key={q.id} className="space-y-3">
-          <p className="text-sm font-medium">{qi + 1}. {q.text}</p>
+          <p className="text-sm font-medium">{qi + 1}. {q.question}</p>
           <div className="space-y-2">
             {q.answers.map((a) => {
               const isSelected = selectedAnswers[q.id] === a.id
@@ -57,7 +57,7 @@ export function QuizViewer({ questions, onComplete }: QuizViewerProps) {
                     ? <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                     : <XCircle className="h-4 w-4 text-red-500 shrink-0" />
                   )}
-                  {a.text}
+                  {a.answer}
                 </div>
               )
             })}

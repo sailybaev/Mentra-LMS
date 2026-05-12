@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils/cn'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { CheckCircle2, Clock, AlertTriangle, Pencil, Trash2, Download, Link2, FileText, Paperclip } from 'lucide-react'
+import { AssignmentFeedbackPanel } from '@/components/ai/AssignmentFeedbackPanel'
 
 interface AssignmentViewerProps {
   assignmentId: string
@@ -257,6 +258,14 @@ export function AssignmentViewer({ assignmentId }: AssignmentViewerProps) {
             )}
           </div>
         </div>
+      )}
+
+      {/* AI feedback — shown when submitted with text content, before grading */}
+      {submission && !editing && (
+        <AssignmentFeedbackPanel
+          submissionId={submission.id}
+          hasTextContent={!!submission.text_content}
+        />
       )}
 
       {/* Submission form — new or edit */}

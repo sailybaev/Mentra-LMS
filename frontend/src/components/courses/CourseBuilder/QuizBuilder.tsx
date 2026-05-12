@@ -153,10 +153,10 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
         setTitle(title || 'Quiz')
         setQuestions(
           result.questions.map((q, i) => ({
-            question: (q as unknown as { text?: string; question?: string }).text || (q as unknown as { question?: string }).question || '',
+            question: q.question,
             position: i,
             answers: (q.answers || []).map((a) => ({
-              answer: (a as unknown as { text?: string; answer?: string }).text || (a as unknown as { answer?: string }).answer || '',
+              answer: a.answer,
               is_correct: a.is_correct,
             })),
           }))

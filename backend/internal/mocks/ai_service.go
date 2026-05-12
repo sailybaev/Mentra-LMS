@@ -33,3 +33,19 @@ func (m *MockAIService) GenerateRemediation(ctx context.Context, lessonContent s
 	args := m.Called(ctx, lessonContent, wrongQuestions)
 	return args.String(0), args.Error(1)
 }
+
+func (m *MockAIService) GenerateAssignmentFeedback(ctx context.Context, assignmentTitle, description, submissionText string) (*entities.AssignmentFeedback, error) {
+	args := m.Called(ctx, assignmentTitle, description, submissionText)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entities.AssignmentFeedback), args.Error(1)
+}
+
+func (m *MockAIService) GenerateFlashcards(ctx context.Context, lessonContent string, numCards int) ([]entities.Flashcard, error) {
+	args := m.Called(ctx, lessonContent, numCards)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]entities.Flashcard), args.Error(1)
+}

@@ -1,12 +1,12 @@
 export interface QuizAnswer {
   id: string
-  text: string
+  answer: string
   is_correct: boolean
 }
 
 export interface QuizQuestion {
   id: string
-  text: string
+  question: string
   answers: QuizAnswer[]
   explanation?: string
 }

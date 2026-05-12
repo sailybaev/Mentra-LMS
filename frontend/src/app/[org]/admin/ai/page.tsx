@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { QuizGenerator } from '@/components/ai/QuizGenerator'
 import { LessonSummarizer } from '@/components/ai/LessonSummarizer'
+import { FlashcardGenerator } from '@/components/ai/FlashcardGenerator'
 
 export default function AdminAIPage() {
   return (
@@ -16,6 +17,7 @@ export default function AdminAIPage() {
       <Tabs defaultValue="quiz">
         <TabsList>
           <TabsTrigger value="quiz">Quiz Generator</TabsTrigger>
+          <TabsTrigger value="flashcards">Flashcard Generator</TabsTrigger>
           <TabsTrigger value="summary">Lesson Summarizer</TabsTrigger>
         </TabsList>
         <TabsContent value="quiz" className="mt-4">
@@ -25,6 +27,16 @@ export default function AdminAIPage() {
             </CardHeader>
             <CardContent>
               <QuizGenerator />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="flashcards" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Generate Flashcards from Lesson</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FlashcardGenerator />
             </CardContent>
           </Card>
         </TabsContent>

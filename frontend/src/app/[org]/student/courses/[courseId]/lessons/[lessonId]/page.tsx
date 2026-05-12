@@ -1,18 +1,22 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, CheckCircle, BookOpen, Video, HelpCircle, FileIcon, Link2 } from 'lucide-react'
+import { ChevronLeft, CheckCircle, BookOpen, Video, HelpCircle, FileIcon, Link2, Layers } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useModules } from '@/lib/queries/modules.queries'
 import { useMarkComplete, useProgress } from '@/lib/queries/progress.queries'
 import * as lessonsApi from '@/lib/api/lessons'
 import { LessonViewer } from '@/components/courses/LessonViewer'
+import { FlashcardDeck } from '@/components/ai/FlashcardDeck'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { LessonDTO, LessonType } from '@/types/lesson'
 import { cn } from '@/lib/utils/cn'
+import { useGenerateFlashcards } from '@/lib/queries/ai.queries'
+import { FlashcardDTO } from '@/lib/api/ai'
 
 const lessonTypeBadge: Record<LessonType, string> = {
   video: 'text-sky-600 bg-sky-50',
@@ -58,6 +62,18 @@ export default function LessonPage() {
   const isCompleted = Array.isArray(progressList)
     ? progressList.some((p) => p.lesson_id === lessonId && !!p.completed_at)
     : false
+
+  const generateFlashcards = useGenerateFlashcards()
+  const [flashcards, setFlashcards] = useState<FlashcardDTO[] | null>(null)
+
+  const handleFlashcards = async () => {
+    try {
+      const cards = await generateFlashcards.mutateAsync({ lessonId, numCards: 8 })
+      setFlashcards(cards)
+    } catch {
+      toast.error('Failed to generate flashcards. Check that the lesson has content.')
+    }
+  }
 
   const handleMarkComplete = async (score?: number) => {
     try {
@@ -132,7 +148,7 @@ export default function LessonPage() {
 
       {/* Actions */}
       {lesson.type !== 'quiz' && (
-        <div className="flex gap-2 mt-6">
+        <div className="flex gap-2 mt-6 flex-wrap">
           <Button
             onClick={() => handleMarkComplete()}
             disabled={markComplete.isPending || isCompleted}
@@ -147,6 +163,18 @@ export default function LessonPage() {
             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
             {markComplete.isPending ? 'Saving…' : isCompleted ? 'Completed' : 'Mark complete'}
           </Button>
+          {lesson.type === 'text' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-4 text-xs text-[#6b6b6b] hover:text-[#1a1a1a] hover:bg-[#f0efed]"
+              onClick={handleFlashcards}
+              disabled={generateFlashcards.isPending}
+            >
+              <Layers className="h-3.5 w-3.5 mr-1.5" />
+              {generateFlashcards.isPending ? 'Generating…' : flashcards ? 'Regenerate flashcards' : 'Study with flashcards'}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -155,6 +183,14 @@ export default function LessonPage() {
           >
             Back to course
           </Button>
+        </div>
+      )}
+
+      {/* Flashcard deck */}
+      {flashcards && flashcards.length > 0 && (
+        <div className="mt-6 border border-[#e8e8e6] rounded-lg p-5">
+          <p className="text-xs font-semibold text-[#6b6b6b] uppercase tracking-widest mb-4">Flashcards</p>
+          <FlashcardDeck cards={flashcards} />
         </div>
       )}
     </div>

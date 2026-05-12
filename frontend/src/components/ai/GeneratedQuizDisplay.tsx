@@ -27,7 +27,7 @@ export function GeneratedQuizDisplay({ quiz }: GeneratedQuizDisplayProps) {
       {quiz.questions.map((q, qi) => (
         <Card key={q.id}>
           <CardContent className="pt-4 pb-4">
-            <p className="text-sm font-medium mb-3">{qi + 1}. {q.text}</p>
+            <p className="text-sm font-medium mb-3">{qi + 1}. {q.question}</p>
             <div className="space-y-1.5">
               {q.answers.map((a) => (
                 <div
@@ -43,7 +43,7 @@ export function GeneratedQuizDisplay({ quiz }: GeneratedQuizDisplayProps) {
                       ? <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                       : <XCircle className="h-4 w-4 text-ink-subtle shrink-0" />
                   )}
-                  <span>{a.text}</span>
+                  <span>{a.answer}</span>
                   {showAnswers && a.is_correct && (
                     <Badge variant="success" className="ml-auto text-xs">Correct</Badge>
                   )}

@@ -155,6 +155,8 @@ func NewRouter(deps Dependencies) *gin.Engine {
 	ai := protected.Group("/ai")
 	ai.POST("/summarize", deps.AIHandler.SummarizeLesson)
 	ai.POST("/generate-quiz", deps.AIHandler.GenerateQuiz)
+	ai.POST("/assignment-feedback", deps.AIHandler.GetAssignmentFeedback)
+	ai.POST("/generate-flashcards", deps.AIHandler.GenerateFlashcards)
 
 	// User profile
 	protected.GET("/me", deps.UserHandler.GetMe)

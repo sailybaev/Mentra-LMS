@@ -174,6 +174,79 @@ In 2-3 sentences, explain which concepts to review and how to approach them. Be 
 	return c.generate(ctx, prompt)
 }
 
+func (c *OllamaClient) GenerateAssignmentFeedback(ctx context.Context, assignmentTitle, description, submissionText string) (*entities.AssignmentFeedback, error) {
+	prompt := fmt.Sprintf(`You are reviewing a student's assignment submission.
+
+Assignment title: %s
+Assignment description: %s
+
+Student submission:
+%s
+
+Provide structured feedback as JSON only:
+{
+  "strengths": ["point 1", "point 2"],
+  "gaps": ["gap 1", "gap 2"],
+  "improvements": ["suggestion 1", "suggestion 2"],
+  "overall": "2-3 sentence summary"
+}
+
+Return ONLY valid JSON, no other text.`, assignmentTitle, description, submissionText)
+
+	response, err := c.generate(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+
+	type feedbackJSON struct {
+		Strengths    []string `json:"strengths"`
+		Gaps         []string `json:"gaps"`
+		Improvements []string `json:"improvements"`
+		Overall      string   `json:"overall"`
+	}
+	var fb feedbackJSON
+	if err := json.Unmarshal([]byte(response), &fb); err != nil {
+		return nil, apperrors.InternalError("failed to parse AI feedback response")
+	}
+	return &entities.AssignmentFeedback{
+		Strengths:    fb.Strengths,
+		Gaps:         fb.Gaps,
+		Improvements: fb.Improvements,
+		Overall:      fb.Overall,
+	}, nil
+}
+
+func (c *OllamaClient) GenerateFlashcards(ctx context.Context, lessonContent string, numCards int) ([]entities.Flashcard, error) {
+	prompt := fmt.Sprintf(`Based on the following lesson content, generate %d flashcards as JSON.
+
+Lesson content:
+%s
+
+Return ONLY valid JSON in this exact format:
+[
+  {"term": "Term or concept", "definition": "Clear, concise definition"}
+]`, numCards, lessonContent)
+
+	response, err := c.generate(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+
+	type flashcardJSON struct {
+		Term       string `json:"term"`
+		Definition string `json:"definition"`
+	}
+	var cards []flashcardJSON
+	if err := json.Unmarshal([]byte(response), &cards); err != nil {
+		return nil, apperrors.InternalError("failed to parse AI flashcard response")
+	}
+	result := make([]entities.Flashcard, len(cards))
+	for i, card := range cards {
+		result[i] = entities.Flashcard{Term: card.Term, Definition: card.Definition}
+	}
+	return result, nil
+}
+
 func (c *OllamaClient) GenerateProgressInsights(ctx context.Context, progress []entities.LessonProgress) (string, error) {
 	completedCount := 0
 	var totalScore float64

@@ -14,10 +14,9 @@ export function useSummarizeLesson() {
   })
 }
 
-export function useAIInsights(courseId: string) {
+export function useAIInsights() {
   return useQuery({
-    queryKey: ['ai', 'insights', courseId],
-    queryFn: () => aiApi.getAIInsights(courseId),
-    enabled: !!courseId,
+    queryKey: ['ai', 'insights'],
+    queryFn: () => aiApi.getAIInsights(),
   })
 }

@@ -17,7 +17,7 @@ export function AIStudyPanel({ courseId, courseTitle }: AIStudyPanelProps) {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ai', 'insights', courseId],
-    queryFn: () => aiApi.getAIInsights(courseId!),
+    queryFn: () => aiApi.getAIInsights(),
     enabled: !!courseId && enabled,
   })
 
@@ -62,11 +62,9 @@ export function AIStudyPanel({ courseId, courseTitle }: AIStudyPanelProps) {
               <p className="text-sm text-[#3b3b3b] leading-relaxed whitespace-pre-wrap">
                 {data.insights}
               </p>
-              {data.generated_at && (
-                <p className="text-[11px] text-[#9b9b9b]">
-                  Generated {new Date(data.generated_at).toLocaleDateString()}
-                </p>
-              )}
+              <p className="text-[11px] text-[#9b9b9b]">
+                {data.completed_lessons} / {data.total_lessons} lessons · avg {data.average_score.toFixed(0)}%
+              </p>
             </div>
           )}
         </div>

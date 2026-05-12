@@ -150,9 +150,8 @@ func NewRouter(deps Dependencies) *gin.Engine {
 	progress.GET("/insights", deps.ProgressHandler.GetInsights)
 	progress.POST("/lessons/:lessonID/complete", deps.ProgressHandler.Complete)
 
-	// AI
+	// AI — read-only generation open to all roles; no write side effects
 	ai := protected.Group("/ai")
-	ai.Use(middleware.RequireRole(entities.RoleTeacher, entities.RoleAdmin))
 	ai.POST("/summarize", deps.AIHandler.SummarizeLesson)
 	ai.POST("/generate-quiz", deps.AIHandler.GenerateQuiz)
 

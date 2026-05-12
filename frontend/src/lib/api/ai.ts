@@ -12,7 +12,7 @@ export async function summarizeLesson(lessonId: string): Promise<{ summary: stri
   return res.data
 }
 
-export async function getAIInsights(courseId: string): Promise<InsightsDTO> {
-  const res = await apiClient.get<InsightsDTO>(`/ai/insights/${courseId}`)
+export async function getAIInsights(): Promise<InsightsDTO> {
+  const res = await apiClient.get<InsightsDTO>('/progress/insights')
   return res.data
 }

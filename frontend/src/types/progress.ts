@@ -10,8 +10,9 @@ export interface ProgressDTO {
 
 export interface InsightsDTO {
   insights: string
-  generated_at: string
-  course_id: string
+  total_lessons: number
+  completed_lessons: number
+  average_score: number
 }
 
 export interface CourseProgressSummary {

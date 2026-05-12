@@ -28,3 +28,8 @@ func (m *MockAIService) GenerateProgressInsights(ctx context.Context, completedL
 	args := m.Called(ctx, completedLessons)
 	return args.String(0), args.Error(1)
 }
+
+func (m *MockAIService) GenerateRemediation(ctx context.Context, lessonContent string, wrongQuestions []string) (string, error) {
+	args := m.Called(ctx, lessonContent, wrongQuestions)
+	return args.String(0), args.Error(1)
+}

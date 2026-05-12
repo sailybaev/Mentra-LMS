@@ -231,6 +231,10 @@ func NewRouter(deps Dependencies) *gin.Engine {
 		deps.FileAttachmentHandler.Delete,
 	)
 
+	// Adaptive learning
+	courses.GET("/:id/pacing", deps.ProgressHandler.GetCoursePacing)
+	quizzes.GET("/:id/remediation", deps.QuizAttemptHandler.GetRemediation)
+
 	// Grades
 	courses.GET("/:id/my-grades", deps.GradeHandler.GetMyGrades)
 	courses.GET("/:id/deadlines", deps.GradeHandler.GetUpcomingDeadlines)

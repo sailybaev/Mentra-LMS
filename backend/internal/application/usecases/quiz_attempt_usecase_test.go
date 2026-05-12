@@ -19,7 +19,7 @@ import (
 func TestQuizAttemptUseCase_Submit_Success_AutoGrades(t *testing.T) {
 	attemptRepo := new(mocks.MockQuizAttemptRepository)
 	quizRepo := new(mocks.MockQuizRepository)
-	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo)
+	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo, new(mocks.MockLessonRepository), new(mocks.MockAIService))
 
 	orgID := uuid.New()
 	lessonID := uuid.New()
@@ -45,7 +45,7 @@ func TestQuizAttemptUseCase_Submit_Success_AutoGrades(t *testing.T) {
 func TestQuizAttemptUseCase_Submit_AllCorrect(t *testing.T) {
 	attemptRepo := new(mocks.MockQuizAttemptRepository)
 	quizRepo := new(mocks.MockQuizRepository)
-	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo)
+	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo, new(mocks.MockLessonRepository), new(mocks.MockAIService))
 
 	orgID := uuid.New()
 	lessonID := uuid.New()
@@ -69,7 +69,7 @@ func TestQuizAttemptUseCase_Submit_AllCorrect(t *testing.T) {
 func TestQuizAttemptUseCase_Submit_NoneCorrect(t *testing.T) {
 	attemptRepo := new(mocks.MockQuizAttemptRepository)
 	quizRepo := new(mocks.MockQuizRepository)
-	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo)
+	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo, new(mocks.MockLessonRepository), new(mocks.MockAIService))
 
 	orgID := uuid.New()
 	lessonID := uuid.New()
@@ -94,7 +94,7 @@ func TestQuizAttemptUseCase_Submit_NoneCorrect(t *testing.T) {
 func TestQuizAttemptUseCase_Submit_DeadlinePassed_ReturnsValidation(t *testing.T) {
 	attemptRepo := new(mocks.MockQuizAttemptRepository)
 	quizRepo := new(mocks.MockQuizRepository)
-	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo)
+	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo, new(mocks.MockLessonRepository), new(mocks.MockAIService))
 
 	orgID := uuid.New()
 	lessonID := uuid.New()
@@ -116,7 +116,7 @@ func TestQuizAttemptUseCase_Submit_DeadlinePassed_ReturnsValidation(t *testing.T
 func TestQuizAttemptUseCase_Submit_AlreadyAttempted_ReturnsExisting(t *testing.T) {
 	attemptRepo := new(mocks.MockQuizAttemptRepository)
 	quizRepo := new(mocks.MockQuizRepository)
-	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo)
+	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo, new(mocks.MockLessonRepository), new(mocks.MockAIService))
 
 	orgID := uuid.New()
 	lessonID := uuid.New()

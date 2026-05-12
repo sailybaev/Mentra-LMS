@@ -241,8 +241,8 @@ func TestGroupUseCase_ListGroups(t *testing.T) {
 	orgID := uuid.New()
 	courseID := uuid.New()
 	groups := []entities.Group{
-		{ID: uuid.New(), CourseID: courseID, OrgID: orgID, Name: "G1"},
-		{ID: uuid.New(), CourseID: courseID, OrgID: orgID, Name: "G2"},
+		{ID: uuid.New(), CourseID: &courseID, OrgID: orgID, Name: "G1"},
+		{ID: uuid.New(), CourseID: &courseID, OrgID: orgID, Name: "G2"},
 	}
 	groupRepo.On("ListGroupsByCourse", mock.Anything, courseID, orgID).Return(groups, nil)
 
@@ -343,7 +343,7 @@ func TestProgressUseCase_GetStudentProgress(t *testing.T) {
 	progressRepo := new(mocks.MockLessonProgressRepository)
 	lessonRepo := new(mocks.MockLessonRepository)
 	aiService := new(mocks.MockAIService)
-	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService)
+	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService, new(mocks.MockModuleRepository), new(mocks.MockQuizRepository), new(mocks.MockQuizAttemptRepository))
 
 	orgID := uuid.New()
 	userID := uuid.New()
@@ -363,7 +363,7 @@ func TestProgressUseCase_GetStudentProgress(t *testing.T) {
 func TestQuizAttemptUseCase_GetMyAttempt(t *testing.T) {
 	attemptRepo := new(mocks.MockQuizAttemptRepository)
 	quizRepo := new(mocks.MockQuizRepository)
-	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo)
+	uc := NewQuizAttemptUseCase(attemptRepo, quizRepo, new(mocks.MockLessonRepository), new(mocks.MockAIService))
 
 	quizID := uuid.New()
 	studentID := uuid.New()
@@ -400,7 +400,7 @@ func TestFileAttachmentUseCase_ListByRef(t *testing.T) {
 func TestCourseUseCase_ListCourses(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	courses := []entities.Course{
@@ -418,7 +418,7 @@ func TestCourseUseCase_ListCourses(t *testing.T) {
 func TestCourseUseCase_DeleteCourse(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	courseID := uuid.New()
@@ -454,7 +454,7 @@ func TestGroupUseCase_GetStudentGroup(t *testing.T) {
 	orgID := uuid.New()
 	courseID := uuid.New()
 	studentID := uuid.New()
-	group := &entities.Group{ID: uuid.New(), CourseID: courseID, OrgID: orgID, Name: "G1"}
+	group := &entities.Group{ID: uuid.New(), CourseID: &courseID, OrgID: orgID, Name: "G1"}
 	groupRepo.On("GetStudentGroup", mock.Anything, courseID, studentID, orgID).Return(group, nil)
 
 	result, err := uc.GetStudentGroup(context.Background(), courseID, studentID, orgID)

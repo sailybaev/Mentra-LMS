@@ -19,3 +19,13 @@ type QuizAttemptResultDTO struct {
 	Percentage  float64   `json:"percentage"`
 	SubmittedAt time.Time `json:"submitted_at"`
 }
+
+type RemediationDTO struct {
+	QuizID      string   `json:"quiz_id"`
+	LessonTitle string   `json:"lesson_title"`
+	Score       int      `json:"score"`
+	MaxScore    int      `json:"max_score"`
+	Percentage  float64  `json:"percentage"`
+	Remediation string   `json:"remediation"`
+	WeakTopics  []string `json:"weak_topics"`
+}

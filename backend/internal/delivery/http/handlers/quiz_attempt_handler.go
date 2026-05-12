@@ -54,3 +54,19 @@ func (h *QuizAttemptHandler) GetMyAttempt(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": result})
 }
+
+func (h *QuizAttemptHandler) GetRemediation(c *gin.Context) {
+	quizID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid quiz id"))
+		return
+	}
+	studentID, _ := uuid.Parse(middleware.GetUserID(c))
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	result, err := h.attemptUC.GetRemediation(c.Request.Context(), quizID, studentID, orgID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": result})
+}

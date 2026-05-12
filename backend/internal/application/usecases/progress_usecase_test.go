@@ -19,7 +19,7 @@ func TestProgressUseCase_CompleteLesson_Success_NewProgress(t *testing.T) {
 	progressRepo := new(mocks.MockLessonProgressRepository)
 	lessonRepo := new(mocks.MockLessonRepository)
 	aiService := new(mocks.MockAIService)
-	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService)
+	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService, new(mocks.MockModuleRepository), new(mocks.MockQuizRepository), new(mocks.MockQuizAttemptRepository))
 
 	orgID := uuid.New()
 	userID := uuid.New()
@@ -39,7 +39,7 @@ func TestProgressUseCase_CompleteLesson_Idempotent_UpdatesExisting(t *testing.T)
 	progressRepo := new(mocks.MockLessonProgressRepository)
 	lessonRepo := new(mocks.MockLessonRepository)
 	aiService := new(mocks.MockAIService)
-	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService)
+	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService, new(mocks.MockModuleRepository), new(mocks.MockQuizRepository), new(mocks.MockQuizAttemptRepository))
 
 	orgID := uuid.New()
 	userID := uuid.New()
@@ -67,7 +67,7 @@ func TestProgressUseCase_GetProgressInsights_Success(t *testing.T) {
 	progressRepo := new(mocks.MockLessonProgressRepository)
 	lessonRepo := new(mocks.MockLessonRepository)
 	aiService := new(mocks.MockAIService)
-	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService)
+	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService, new(mocks.MockModuleRepository), new(mocks.MockQuizRepository), new(mocks.MockQuizAttemptRepository))
 
 	orgID := uuid.New()
 	userID := uuid.New()
@@ -93,7 +93,7 @@ func TestProgressUseCase_GetProgressInsights_AIFails_FallbackMessage(t *testing.
 	progressRepo := new(mocks.MockLessonProgressRepository)
 	lessonRepo := new(mocks.MockLessonRepository)
 	aiService := new(mocks.MockAIService)
-	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService)
+	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService, new(mocks.MockModuleRepository), new(mocks.MockQuizRepository), new(mocks.MockQuizAttemptRepository))
 
 	orgID := uuid.New()
 	userID := uuid.New()
@@ -115,7 +115,7 @@ func TestProgressUseCase_GetProgressInsights_NoProgress_ReturnsNotFound(t *testi
 	progressRepo := new(mocks.MockLessonProgressRepository)
 	lessonRepo := new(mocks.MockLessonRepository)
 	aiService := new(mocks.MockAIService)
-	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService)
+	uc := NewProgressUseCase(progressRepo, lessonRepo, aiService, new(mocks.MockModuleRepository), new(mocks.MockQuizRepository), new(mocks.MockQuizAttemptRepository))
 
 	orgID := uuid.New()
 	userID := uuid.New()

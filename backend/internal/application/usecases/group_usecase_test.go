@@ -27,10 +27,10 @@ func TestGroupUseCase_CreateGroup_Success(t *testing.T) {
 	courseRepo.On("FindByID", mock.Anything, courseID, orgID).Return(course, nil)
 	groupRepo.On("CreateGroup", mock.Anything, mock.AnythingOfType("*entities.Group")).Return(nil)
 
-	result, err := uc.CreateGroup(context.Background(), courseID, orgID, dto.CreateGroupRequest{Name: "Group A"})
+	result, err := uc.CreateGroup(context.Background(), &courseID, orgID, dto.CreateGroupRequest{Name: "Group A"})
 	require.NoError(t, err)
 	assert.Equal(t, "Group A", result.Name)
-	assert.Equal(t, courseID.String(), result.CourseID)
+	cid := courseID.String(); assert.Equal(t, &cid, result.CourseID)
 }
 
 func TestGroupUseCase_CreateGroup_CourseNotFound(t *testing.T) {
@@ -42,7 +42,7 @@ func TestGroupUseCase_CreateGroup_CourseNotFound(t *testing.T) {
 	courseID := uuid.New()
 	courseRepo.On("FindByID", mock.Anything, courseID, orgID).Return(nil, apperrors.NotFoundError("course", courseID.String()))
 
-	_, err := uc.CreateGroup(context.Background(), courseID, orgID, dto.CreateGroupRequest{Name: "Group A"})
+	_, err := uc.CreateGroup(context.Background(), &courseID, orgID, dto.CreateGroupRequest{Name: "Group A"})
 	require.Error(t, err)
 	var appErr *apperrors.AppError
 	require.ErrorAs(t, err, &appErr)
@@ -59,7 +59,7 @@ func TestGroupUseCase_AddMember_Success(t *testing.T) {
 	groupID := uuid.New()
 	studentID := uuid.New()
 
-	group := &entities.Group{ID: groupID, CourseID: courseID, OrgID: orgID}
+	group := &entities.Group{ID: groupID, CourseID: &courseID, OrgID: orgID}
 
 	groupRepo.On("GetGroupByID", mock.Anything, groupID, orgID).Return(group, nil)
 	groupRepo.On("GetStudentGroup", mock.Anything, courseID, studentID, orgID).Return(nil, apperrors.NotFoundError("group", ""))
@@ -81,8 +81,8 @@ func TestGroupUseCase_AddMember_AlreadyInGroup_ReturnsConflict(t *testing.T) {
 	groupID := uuid.New()
 	studentID := uuid.New()
 
-	group := &entities.Group{ID: groupID, CourseID: courseID, OrgID: orgID}
-	existingGroup := &entities.Group{ID: uuid.New(), CourseID: courseID, OrgID: orgID}
+	group := &entities.Group{ID: groupID, CourseID: &courseID, OrgID: orgID}
+	existingGroup := &entities.Group{ID: uuid.New(), CourseID: &courseID, OrgID: orgID}
 
 	groupRepo.On("GetGroupByID", mock.Anything, groupID, orgID).Return(group, nil)
 	groupRepo.On("GetStudentGroup", mock.Anything, courseID, studentID, orgID).Return(existingGroup, nil)
@@ -108,7 +108,7 @@ func TestGroupUseCase_CreateGroup_WithTeacherID(t *testing.T) {
 	groupRepo.On("CreateGroup", mock.Anything, mock.AnythingOfType("*entities.Group")).Return(nil)
 
 	teacherIDStr := teacherID.String()
-	result, err := uc.CreateGroup(context.Background(), courseID, orgID, dto.CreateGroupRequest{Name: "Group B", TeacherID: &teacherIDStr})
+	result, err := uc.CreateGroup(context.Background(), &courseID, orgID, dto.CreateGroupRequest{Name: "Group B", TeacherID: &teacherIDStr})
 	require.NoError(t, err)
 	require.NotNil(t, result.TeacherID)
 	assert.Equal(t, teacherIDStr, *result.TeacherID)

@@ -77,3 +77,26 @@ func (m *MockGroupRepository) GetStudentGroup(ctx context.Context, courseID, stu
 	}
 	return args.Get(0).(*entities.Group), args.Error(1)
 }
+
+func (m *MockGroupRepository) FindCourseIDsByStudent(ctx context.Context, studentID, orgID uuid.UUID) ([]uuid.UUID, error) {
+	args := m.Called(ctx, studentID, orgID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]uuid.UUID), args.Error(1)
+}
+
+func (m *MockGroupRepository) ListGroupsByOrg(ctx context.Context, orgID uuid.UUID) ([]entities.Group, error) {
+	args := m.Called(ctx, orgID)
+	return args.Get(0).([]entities.Group), args.Error(1)
+}
+
+func (m *MockGroupRepository) AssignToCourse(ctx context.Context, groupID, courseID, orgID uuid.UUID) error {
+	args := m.Called(ctx, groupID, courseID, orgID)
+	return args.Error(0)
+}
+
+func (m *MockGroupRepository) UnassignFromCourse(ctx context.Context, groupID, orgID uuid.UUID) error {
+	args := m.Called(ctx, groupID, orgID)
+	return args.Error(0)
+}

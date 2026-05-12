@@ -42,3 +42,11 @@ func (m *MockUserRepository) ListAll(ctx context.Context, page, pageSize int) ([
 	args := m.Called(ctx, page, pageSize)
 	return args.Get(0).([]entities.User), args.Get(1).(int64), args.Error(2)
 }
+
+func (m *MockUserRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) ([]entities.User, error) {
+	args := m.Called(ctx, ids)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]entities.User), args.Error(1)
+}

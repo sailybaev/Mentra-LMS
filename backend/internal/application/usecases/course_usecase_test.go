@@ -19,7 +19,7 @@ import (
 func TestCourseUseCase_CreateCourse_Success_DraftStatus(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	creatorID := uuid.New()
@@ -37,7 +37,7 @@ func TestCourseUseCase_CreateCourse_Success_DraftStatus(t *testing.T) {
 func TestCourseUseCase_PublishCourse_Success(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	course := &entities.Course{
@@ -60,7 +60,7 @@ func TestCourseUseCase_PublishCourse_Success(t *testing.T) {
 func TestCourseUseCase_PublishCourse_AlreadyPublished_ReturnsConflict(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	course := &entities.Course{
@@ -81,7 +81,7 @@ func TestCourseUseCase_PublishCourse_AlreadyPublished_ReturnsConflict(t *testing
 func TestCourseUseCase_UpdateCourse_EmptyFields_PreserveExisting(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	course := &entities.Course{
@@ -105,7 +105,7 @@ func TestCourseUseCase_UpdateCourse_EmptyFields_PreserveExisting(t *testing.T) {
 func TestCourseUseCase_UpdateCourse_UpdatesProvidedFields(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	course := &entities.Course{
@@ -127,7 +127,7 @@ func TestCourseUseCase_UpdateCourse_UpdatesProvidedFields(t *testing.T) {
 func TestCourseUseCase_GetCourse_NotFound(t *testing.T) {
 	courseRepo := new(mocks.MockCourseRepository)
 	memberRepo := new(mocks.MockMembershipRepository)
-	uc := NewCourseUseCase(courseRepo, memberRepo)
+	uc := NewCourseUseCase(courseRepo, memberRepo, new(mocks.MockGroupRepository), new(mocks.MockCourseTeacherRepository))
 
 	orgID := uuid.New()
 	courseID := uuid.New()

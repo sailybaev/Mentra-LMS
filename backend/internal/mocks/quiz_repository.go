@@ -33,6 +33,14 @@ func (m *MockQuizRepository) FindByLesson(ctx context.Context, lessonID, orgID u
 	return args.Get(0).(*entities.Quiz), args.Error(1)
 }
 
+func (m *MockQuizRepository) FindByLessons(ctx context.Context, lessonIDs []uuid.UUID, orgID uuid.UUID) ([]entities.Quiz, error) {
+	args := m.Called(ctx, lessonIDs, orgID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]entities.Quiz), args.Error(1)
+}
+
 func (m *MockQuizRepository) Update(ctx context.Context, quiz *entities.Quiz) error {
 	args := m.Called(ctx, quiz)
 	return args.Error(0)

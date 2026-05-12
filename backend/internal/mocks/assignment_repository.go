@@ -84,3 +84,8 @@ func (m *MockAssignmentRepository) UpdateSubmission(ctx context.Context, s *enti
 	args := m.Called(ctx, s)
 	return args.Error(0)
 }
+
+func (m *MockAssignmentRepository) DeleteSubmission(ctx context.Context, id, studentID uuid.UUID) error {
+	args := m.Called(ctx, id, studentID)
+	return args.Error(0)
+}

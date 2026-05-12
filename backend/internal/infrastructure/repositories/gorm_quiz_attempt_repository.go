@@ -56,6 +56,32 @@ func (r *GORMQuizAttemptRepository) FindByQuiz(ctx context.Context, quizID uuid.
 	return result, nil
 }
 
+func (r *GORMQuizAttemptRepository) FindByStudentAndQuizzes(ctx context.Context, studentID uuid.UUID, quizIDs []uuid.UUID) ([]*entities.QuizAttempt, error) {
+	if len(quizIDs) == 0 {
+		return nil, nil
+	}
+	ids := make([]string, len(quizIDs))
+	for i, id := range quizIDs {
+		ids[i] = id.String()
+	}
+	var models []database.QuizAttemptModel
+	err := r.db.WithContext(ctx).
+		Where("student_id = ? AND quiz_id IN ?", studentID.String(), ids).
+		Find(&models).Error
+	if err != nil {
+		return nil, apperrors.InternalError(err.Error())
+	}
+	result := make([]*entities.QuizAttempt, len(models))
+	for i := range models {
+		e, err := toQuizAttemptEntity(&models[i])
+		if err != nil {
+			return nil, err
+		}
+		result[i] = e
+	}
+	return result, nil
+}
+
 func toQuizAttemptModel(a *entities.QuizAttempt) (*database.QuizAttemptModel, error) {
 	answersJSON, err := json.Marshal(a.Answers)
 	if err != nil {

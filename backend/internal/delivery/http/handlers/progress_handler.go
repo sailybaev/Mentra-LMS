@@ -60,3 +60,19 @@ func (h *ProgressHandler) GetInsights(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": insights})
 }
+
+func (h *ProgressHandler) GetCoursePacing(c *gin.Context) {
+	courseID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.Error(apperrors.ValidationError("invalid course id"))
+		return
+	}
+	userID, _ := uuid.Parse(middleware.GetUserID(c))
+	orgID, _ := uuid.Parse(middleware.GetOrgID(c))
+	pacing, err := h.progressUC.GetCoursePacing(c.Request.Context(), courseID, userID, orgID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": pacing})
+}

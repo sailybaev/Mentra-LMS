@@ -151,6 +151,22 @@ Return ONLY valid JSON in this exact format:
 	return result, nil
 }
 
+func (c *OllamaClient) GenerateRemediation(ctx context.Context, lessonContent string, wrongQuestions []string) (string, error) {
+	questionsText := ""
+	for i, q := range wrongQuestions {
+		questionsText += fmt.Sprintf("%d. %s\n", i+1, q)
+	}
+	prompt := fmt.Sprintf(`A student answered the following quiz questions incorrectly:
+
+%s
+Lesson content they studied:
+%s
+
+In 2-3 sentences, explain which concepts to review and how to approach them. Be specific and encouraging.`,
+		questionsText, lessonContent)
+	return c.generate(ctx, prompt)
+}
+
 func (c *OllamaClient) GenerateProgressInsights(ctx context.Context, progress []entities.LessonProgress) (string, error) {
 	completedCount := 0
 	var totalScore float64

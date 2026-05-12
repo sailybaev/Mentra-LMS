@@ -116,6 +116,29 @@ func (r *GORMQuizRepository) Update(ctx context.Context, quiz *entities.Quiz) er
 	})
 }
 
+func (r *GORMQuizRepository) FindByLessons(ctx context.Context, lessonIDs []uuid.UUID, orgID uuid.UUID) ([]entities.Quiz, error) {
+	if len(lessonIDs) == 0 {
+		return nil, nil
+	}
+	ids := make([]string, len(lessonIDs))
+	for i, id := range lessonIDs {
+		ids[i] = id.String()
+	}
+	var models []database.QuizModel
+	err := r.db.WithContext(ctx).
+		Preload("Questions.Answers").
+		Where("lesson_id IN ? AND org_id = ?", ids, orgID.String()).
+		Find(&models).Error
+	if err != nil {
+		return nil, apperrors.InternalError(err.Error())
+	}
+	result := make([]entities.Quiz, len(models))
+	for i := range models {
+		result[i] = *toQuizEntity(&models[i])
+	}
+	return result, nil
+}
+
 func (r *GORMQuizRepository) Delete(ctx context.Context, id, orgID uuid.UUID) error {
 	result := r.db.WithContext(ctx).Where("id = ? AND org_id = ?", id.String(), orgID.String()).Delete(&database.QuizModel{})
 	if result.Error != nil {

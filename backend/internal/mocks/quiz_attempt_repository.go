@@ -32,3 +32,11 @@ func (m *MockQuizAttemptRepository) FindByQuiz(ctx context.Context, quizID uuid.
 	}
 	return args.Get(0).([]*entities.QuizAttempt), args.Error(1)
 }
+
+func (m *MockQuizAttemptRepository) FindByStudentAndQuizzes(ctx context.Context, studentID uuid.UUID, quizIDs []uuid.UUID) ([]*entities.QuizAttempt, error) {
+	args := m.Called(ctx, studentID, quizIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entities.QuizAttempt), args.Error(1)
+}

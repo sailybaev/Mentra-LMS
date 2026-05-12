@@ -7,6 +7,7 @@ import (
 	"github.com/ailms/backend/internal/application/dto"
 	"github.com/ailms/backend/internal/domain/entities"
 	"github.com/ailms/backend/internal/domain/repositories"
+	"github.com/ailms/backend/internal/domain/services"
 	apperrors "github.com/ailms/backend/pkg/errors"
 	"github.com/google/uuid"
 )
@@ -14,10 +15,22 @@ import (
 type QuizAttemptUseCase struct {
 	attemptRepo repositories.QuizAttemptRepository
 	quizRepo    repositories.QuizRepository
+	lessonRepo  repositories.LessonRepository
+	aiService   services.AIService
 }
 
-func NewQuizAttemptUseCase(attemptRepo repositories.QuizAttemptRepository, quizRepo repositories.QuizRepository) *QuizAttemptUseCase {
-	return &QuizAttemptUseCase{attemptRepo: attemptRepo, quizRepo: quizRepo}
+func NewQuizAttemptUseCase(
+	attemptRepo repositories.QuizAttemptRepository,
+	quizRepo repositories.QuizRepository,
+	lessonRepo repositories.LessonRepository,
+	aiService services.AIService,
+) *QuizAttemptUseCase {
+	return &QuizAttemptUseCase{
+		attemptRepo: attemptRepo,
+		quizRepo:    quizRepo,
+		lessonRepo:  lessonRepo,
+		aiService:   aiService,
+	}
 }
 
 func (uc *QuizAttemptUseCase) Submit(ctx context.Context, quizID, studentID, orgID uuid.UUID, answers []dto.QuizAnswerInput) (*dto.QuizAttemptResultDTO, error) {
@@ -89,6 +102,66 @@ func (uc *QuizAttemptUseCase) GetMyAttempt(ctx context.Context, quizID, studentI
 		return nil, err
 	}
 	return toQuizAttemptResultDTO(attempt), nil
+}
+
+func (uc *QuizAttemptUseCase) GetRemediation(ctx context.Context, quizID, studentID, orgID uuid.UUID) (*dto.RemediationDTO, error) {
+	attempt, err := uc.attemptRepo.FindByQuizAndStudent(ctx, quizID, studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	quiz, err := uc.quizRepo.FindByID(ctx, quizID, orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	lesson, err := uc.lessonRepo.FindByID(ctx, quiz.LessonID, orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	pct := 0.0
+	if attempt.MaxScore > 0 {
+		pct = float64(attempt.Score) / float64(attempt.MaxScore) * 100
+	}
+
+	answerMap := make(map[string]string, len(attempt.Answers))
+	for _, a := range attempt.Answers {
+		answerMap[a.QuestionID] = a.AnswerID
+	}
+
+	var wrongQuestions []string
+	for _, q := range quiz.Questions {
+		selectedID := answerMap[q.ID.String()]
+		isCorrect := false
+		for _, a := range q.Answers {
+			if a.ID.String() == selectedID && a.IsCorrect {
+				isCorrect = true
+				break
+			}
+		}
+		if !isCorrect {
+			wrongQuestions = append(wrongQuestions, q.Question)
+		}
+	}
+
+	remediation := "You answered all questions correctly. Great job!"
+	if len(wrongQuestions) > 0 {
+		remediation, err = uc.aiService.GenerateRemediation(ctx, lesson.Content, wrongQuestions)
+		if err != nil {
+			remediation = "Review the lesson material again, paying close attention to the topics you found challenging."
+		}
+	}
+
+	return &dto.RemediationDTO{
+		QuizID:      quizID.String(),
+		LessonTitle: lesson.Title,
+		Score:       attempt.Score,
+		MaxScore:    attempt.MaxScore,
+		Percentage:  pct,
+		Remediation: remediation,
+		WeakTopics:  wrongQuestions,
+	}, nil
 }
 
 func toQuizAttemptResultDTO(a *entities.QuizAttempt) *dto.QuizAttemptResultDTO {

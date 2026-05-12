@@ -29,6 +29,7 @@ type ollamaRequest struct {
 
 type ollamaResponse struct {
 	Response string `json:"response"`
+	Error    string `json:"error"`
 }
 
 func NewOllamaClient(cfg config.OllamaConfig) *OllamaClient {
@@ -60,18 +61,24 @@ func (c *OllamaClient) generate(ctx context.Context, prompt string) (string, err
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", apperrors.InternalError(fmt.Sprintf("ollama request failed: %s", err.Error()))
+		return "", apperrors.InternalError(fmt.Sprintf("AI service unreachable: %s", err.Error()))
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", apperrors.InternalError("failed to read ollama response")
+		return "", apperrors.InternalError("failed to read AI response")
 	}
 
 	var ollamaResp ollamaResponse
 	if err := json.Unmarshal(body, &ollamaResp); err != nil {
-		return "", apperrors.InternalError("failed to parse ollama response")
+		return "", apperrors.InternalError("failed to parse AI response")
+	}
+	if ollamaResp.Error != "" {
+		return "", apperrors.InternalError(fmt.Sprintf("AI service error: %s", ollamaResp.Error))
+	}
+	if resp.StatusCode != 200 {
+		return "", apperrors.InternalError(fmt.Sprintf("AI service returned status %d", resp.StatusCode))
 	}
 	return ollamaResp.Response, nil
 }

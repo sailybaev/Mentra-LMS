@@ -38,6 +38,7 @@ type Dependencies struct {
 func NewRouter(deps Dependencies) *gin.Engine {
 	r := gin.New()
 	r.Use(
+		gin.Recovery(),
 		middleware.CORS(),
 		middleware.RequestLogger(deps.Logger),
 		middleware.ErrorHandler(),

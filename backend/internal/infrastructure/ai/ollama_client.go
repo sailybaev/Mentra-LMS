@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ailms/backend/internal/domain/entities"
@@ -22,9 +23,40 @@ type OllamaClient struct {
 }
 
 type ollamaRequest struct {
-	Model  string `json:"model"`
-	Prompt string `json:"prompt"`
-	Stream bool   `json:"stream"`
+	Model     string `json:"model"`
+	Prompt    string `json:"prompt"`
+	Stream    bool   `json:"stream"`
+	KeepAlive string `json:"keep_alive,omitempty"`
+}
+
+// extractJSON strips markdown code fences that LLMs sometimes wrap around JSON,
+// then extracts the first JSON object or array from the response.
+func extractJSON(s string) string {
+	s = strings.TrimSpace(s)
+	// Strip ```json ... ``` or ``` ... ```
+	if strings.HasPrefix(s, "```") {
+		end := strings.LastIndex(s, "```")
+		if end > 3 {
+			s = s[3:end]
+			// Remove optional language tag on first line
+			if nl := strings.Index(s, "\n"); nl != -1 {
+				s = s[nl+1:]
+			}
+			s = strings.TrimSpace(s)
+		}
+	}
+	// Find the first [ or { and the matching last ] or }
+	start := strings.IndexAny(s, "[{")
+	if start == -1 {
+		return s
+	}
+	open := rune(s[start])
+	close := map[rune]rune{'[': ']', '{': '}'}[open]
+	end := strings.LastIndexByte(s, byte(close))
+	if end == -1 || end < start {
+		return s
+	}
+	return s[start : end+1]
 }
 
 type ollamaResponse struct {
@@ -44,9 +76,10 @@ func NewOllamaClient(cfg config.OllamaConfig) *OllamaClient {
 
 func (c *OllamaClient) generate(ctx context.Context, prompt string) (string, error) {
 	reqBody := ollamaRequest{
-		Model:  c.model,
-		Prompt: prompt,
-		Stream: false,
+		Model:     c.model,
+		Prompt:    prompt,
+		Stream:    false,
+		KeepAlive: "1h",
 	}
 	data, err := json.Marshal(reqBody)
 	if err != nil {
@@ -81,6 +114,12 @@ func (c *OllamaClient) generate(ctx context.Context, prompt string) (string, err
 		return "", apperrors.InternalError(fmt.Sprintf("AI service returned status %d", resp.StatusCode))
 	}
 	return ollamaResp.Response, nil
+}
+
+// Warmup sends a minimal request to Ollama to pre-load the model into memory,
+// avoiding a cold-start delay on the first real request.
+func (c *OllamaClient) Warmup(ctx context.Context) {
+	_, _ = c.generate(ctx, "hi")
 }
 
 func (c *OllamaClient) GenerateLessonSummary(ctx context.Context, lessonContent string) (string, error) {
@@ -129,7 +168,7 @@ Return ONLY valid JSON in this exact format:
 	}
 
 	var questions []questionJSON
-	if err := json.Unmarshal([]byte(response), &questions); err != nil {
+	if err := json.Unmarshal([]byte(extractJSON(response)), &questions); err != nil {
 		return nil, apperrors.InternalError("failed to parse AI quiz response")
 	}
 
@@ -205,7 +244,7 @@ Return ONLY valid JSON, no other text.`, assignmentTitle, description, submissio
 		Overall      string   `json:"overall"`
 	}
 	var fb feedbackJSON
-	if err := json.Unmarshal([]byte(response), &fb); err != nil {
+	if err := json.Unmarshal([]byte(extractJSON(response)), &fb); err != nil {
 		return nil, apperrors.InternalError("failed to parse AI feedback response")
 	}
 	return &entities.AssignmentFeedback{
@@ -237,7 +276,7 @@ Return ONLY valid JSON in this exact format:
 		Definition string `json:"definition"`
 	}
 	var cards []flashcardJSON
-	if err := json.Unmarshal([]byte(response), &cards); err != nil {
+	if err := json.Unmarshal([]byte(extractJSON(response)), &cards); err != nil {
 		return nil, apperrors.InternalError("failed to parse AI flashcard response")
 	}
 	result := make([]entities.Flashcard, len(cards))

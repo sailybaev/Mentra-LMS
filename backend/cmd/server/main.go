@@ -84,6 +84,7 @@ func main() {
 
 	// Init AI service
 	aiService := infraAI.NewOllamaClient(cfg.Ollama)
+	go aiService.Warmup(context.Background())
 
 	seedSuperAdmin(context.Background(), userRepo, cfg, log)
 
